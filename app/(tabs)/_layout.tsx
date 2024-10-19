@@ -1,37 +1,50 @@
+import { View, Text } from 'react-native'
+import React from 'react'
 import { Tabs } from 'expo-router';
-import React from 'react';
+import { AntDesign, EvilIcons, Feather } from '@expo/vector-icons';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function _layout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-      }}>
+    <Tabs screenOptions={{ headerStyle: { backgroundColor: "#FF4646" } }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <AntDesign name="home" size={24} color={color} />
           ),
+          tabBarLabel: "Home",
+          headerTitle: "DANH SÁCH ĐƠN",
         }}
-      />
+      ></Tabs.Screen>
       <Tabs.Screen
-        name="explore"
+        name="received"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Feather name="shopping-bag" size={24} color={color} />
           ),
+          tabBarLabel: "Received",
+          headerTitle: "ĐƠN HÀNG CỦA TÔI",
         }}
-      />
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="delivery"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <AntDesign name="staro" size={24} color={color} />
+          ),
+          tabBarLabel: "Delivery",
+          headerTitle: "ĐƠN HÀNG TÔI SẼ GIAO",
+        }}
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <EvilIcons name="user" size={24} color={color} />
+          ),
+          headerShown: false
+        }}
+      ></Tabs.Screen>
     </Tabs>
   );
 }
