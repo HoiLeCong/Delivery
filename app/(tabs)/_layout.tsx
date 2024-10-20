@@ -4,8 +4,9 @@ import { Tabs } from 'expo-router';
 import { AntDesign, EvilIcons, Feather } from '@expo/vector-icons';
 
 export default function _layout() {
+  
   return (
-    <Tabs screenOptions={{ headerStyle: { backgroundColor: "#FF4646" } }}>
+    <Tabs screenOptions={{ headerStyle: { backgroundColor: "#FF4646" }, tabBarActiveTintColor:'#ff3891', tabBarInactiveTintColor:'black' }}>
       <Tabs.Screen
         name="home"
         options={{
@@ -42,7 +43,8 @@ export default function _layout() {
           tabBarIcon: ({ color }) => (
             <EvilIcons name="user" size={24} color={color} />
           ),
-          headerShown: false
+          tabBarLabel: "Profile",
+          headerShown: false,
         }}
       ></Tabs.Screen>
     </Tabs>
