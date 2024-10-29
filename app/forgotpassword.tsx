@@ -1,52 +1,116 @@
-// import { StyleSheet, Text, View } from 'react-native'
-// import React from 'react'
-
-// const ForgotPasswordScreen = () => {
-//   return (
-//     <View>
-//       <Text>ForgotPasswordScreen</Text>
-//     </View>
-//   )
-// }
-
-// export default ForgotPasswordScreen
-
-// const styles = StyleSheet.create({})
 import React, { useState } from 'react';
 import { 
   StyleSheet, 
   View, 
   Text, 
   TextInput, 
-  TouchableOpacity 
+  TouchableOpacity,
+  ActivityIndicator 
 } from 'react-native';
+import   
+ { auth } from '../src/firebase/firebaseConfig'; 
+import { sendPasswordResetEmail, updatePassword } from 'firebase/auth'; 
+import { firestore } from '../src/firebase/firebaseConfig'; // Import Firestore
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword]   
+ = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');   
 
-  const handleSubmit = () => {
-    // Xử lý logic gửi yêu cầu đặt lại mật khẩu ở đây
-    console.log('Gửi yêu cầu đặt lại mật khẩu cho email:', email);
+  const [isChangePasswordMode, setIsChangePasswordMode] = useState(false);
+
+  const handleSubmit = async () => {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!email || !emailRegex.test(email)) {
+      setMessage('Vui lòng nhập địa chỉ email hợp lệ.');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+
+    if (isChangePasswordMode) {
+      // Change password logic
+      if (newPassword !== confirmPassword) {
+        setMessage('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          await updatePassword(user, newPassword);
+          setMessage('Mật khẩu đã được thay đổi!');
+          setNewPassword('');
+          setConfirmPassword('');
+
+          // Cập nhật Firestore sau khi thay đổi mật khẩu
+          const userRef = firestore.collection('users').doc(user.uid);
+          await userRef.update({ 
+            lastPasswordChange: new Date() 
+          });
+
+        } else {
+          setMessage('Vui lòng đăng nhập để thay đổi mật khẩu.');
+        }
+      } catch (error) {
+        console.error("Error updating password:", error);
+        setMessage('Đã có lỗi xảy ra khi thay đổi mật khẩu.');
+      } finally {
+        setIsLoading(false);
+      }
+
+    } else {
+      // Forgot password logic (send reset email)
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setMessage('Email đặt lại mật khẩu đã được gửi!');
+        setEmail('');
+      } catch (error) {
+        console.error("Error sending password reset email:", error);
+        switch (error) {
+          case 'auth/user-not-found':
+            setMessage('Không tìm thấy tài khoản với email này.');
+            break;
+          case 'auth/invalid-email':
+            setMessage('Địa chỉ email không hợp lệ.');
+            break;
+          default:
+            setMessage('Đã có lỗi xảy ra.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Forgot password?</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email address"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <Text style={styles.message}>
-        *We will send you a message to set or reset your new password
-      </Text>
-      <TouchableOpacity style={styles.touch} onPress={handleSubmit}>
-        <Text style={styles.textTouch}>Submit</Text>
-      </TouchableOpacity>
+        <Text style={styles.title}>Quên mật khẩu?</Text>
+        <TextInput
+            style={styles.input}
+            placeholder="Nhập địa chỉ email của bạn"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+        />
+        {message ? <Text style={styles.message}>{message}</Text> : null}
+        <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleSubmit} 
+            disabled={isLoading}
+        >
+            {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" /> 
+            ) : (
+                <Text style={styles.buttonText}>Gửi</Text>
+            )}
+        </TouchableOpacity>
     </View>
-  );
+);
 };
 
 const styles = StyleSheet.create({
@@ -58,36 +122,30 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 20,
   },
   input: {
     width: '100%',
-    maxWidth: 400,
     height: 40,
-    borderColor: '#ccc',
+    borderColor: 'gray',
     borderWidth: 1,
-    borderRadius: 4,
-    padding: 10,
     marginBottom: 10,
+    paddingHorizontal: 10,
   },
   message: {
-    fontSize: 14,
-    color: '#777',
+    color: 'red',
     marginBottom: 20,
-    //textAlign: 'center',
   },
-  touch: {
-    backgroundColor: "#ff7891",
-    alignItems: "center",
-    borderRadius: 30,
-    padding: 12,
-    marginTop: 10,
+  button: {
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
   },
-  textTouch: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 20,
-  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  }
 });
 
 export default ForgotPassword;
