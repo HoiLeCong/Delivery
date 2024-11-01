@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Image,
   ScrollView,
@@ -11,15 +12,23 @@ import {
 import React, { useState } from "react";
 import { Link, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "@/src/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+ 
+
+
   return (
     <View style={styles.container}>
       <View
@@ -89,10 +98,7 @@ const LoginScreen = () => {
         >
           Forgot password
         </Link>
-        <TouchableOpacity
-          style={styles.touch}
-          onPress={() => router.replace("/home")}
-        >
+        <TouchableOpacity style={styles.touch} onPress={() => Alert.alert('a')}>
           <Text style={styles.textTouch}>Login</Text>
         </TouchableOpacity>
       </ScrollView>
