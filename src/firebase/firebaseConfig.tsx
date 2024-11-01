@@ -1,9 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, getFirestore, } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDN11gw5inTTlNlaiZRgjocqS7na3ChweA",
@@ -18,16 +17,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const orderRef = collection(db, 'orders');
+const userRef = collection(db, "users");
 
-isSupported()
-  .then((supported) => {
-    if (supported) {
-      getAnalytics(app);
-    }
-  })
-  .catch((error) => {
-    console.error("Analytics không được hỗ trợ:", error);
-  });
-
-export { auth, db };
+export { auth, db, orderRef, userRef };
 

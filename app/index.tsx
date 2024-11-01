@@ -98,7 +98,7 @@ const LoginScreen = () => {
         >
           Forgot password
         </Link>
-        <TouchableOpacity style={styles.touch} onPress={() => Alert.alert('a')}>
+        <TouchableOpacity style={styles.touch} onPress={() => router.push('/(tabs)/home')}>
           <Text style={styles.textTouch}>Login</Text>
         </TouchableOpacity>
       </ScrollView>
