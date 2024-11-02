@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/src/firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -22,12 +22,50 @@ const LoginScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+ const handleLogin = async () => {
+   setIsLoading(true);
+   try {
+     console.log("Attempting to log in with email:", email);
+     const userCredential = await signInWithEmailAndPassword(
+       auth,
+       email,
+       password
+     );
+     const userId = userCredential.user.uid;
+     console.log("User logged in. User ID:", userId);
+
+     // Check if the user is a shipper
+     const shipperDoc = await getDoc(doc(db, "shippers", userId));
+     console.log("Checking shipper document existence...");
+     if (shipperDoc.exists()) {
+       console.log("Shipper found, navigating to shipper app.");
+       router.push("/(tabs)/home");
+     } else {
+       console.log("Shipper not found, checking users...");
+       const userDoc = await getDoc(doc(db, "users", userId));
+       if (userDoc.exists()) {
+         console.log("User found, navigating to user app.");
+         router.push("/(tabs)/home");
+       } else {
+         Alert.alert(
+           "Login Error",
+           "This account is not authorized for either app."
+         );
+       }
+     }
+   } catch (error) {
+     console.error("Error logging in:", error.code, error.message);
+     Alert.alert("Login Error", error.message);
+   } finally {
+     setIsLoading(false);
+   }
+ };
+
+
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
- 
-
 
   return (
     <View style={styles.container}>
@@ -98,7 +136,7 @@ const LoginScreen = () => {
         >
           Forgot password
         </Link>
-        <TouchableOpacity style={styles.touch} onPress={() => router.push('/(tabs)/home')}>
+        <TouchableOpacity style={styles.touch} onPress={handleLogin}>
           <Text style={styles.textTouch}>Login</Text>
         </TouchableOpacity>
       </ScrollView>

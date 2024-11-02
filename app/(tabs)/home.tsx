@@ -146,9 +146,9 @@ useEffect(() => {
                 id: docSnapshot.id, // Use docSnapshot.id here
                 ...order,
                 displayName: displayName,
-                userPhone: phoneNumber,
-                paymentMethodName: paymentMethodName, // Include payment method name
-                productNames: productNames, // Add product names to the returned object
+                phoneNumber: phoneNumber,
+                paymentMethodName: paymentMethodName,
+                productNames: productNames, 
               };
             } else {
               console.warn(`User not found for userId: ${userId}`);

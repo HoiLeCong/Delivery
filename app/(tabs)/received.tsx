@@ -1,17 +1,285 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { FlatList } from 'react-native-reanimated/lib/typescript/Animated'
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { db, orderRef } from "@/src/firebase/firebaseConfig";
+import {
+  query,
+  where,
+  onSnapshot,
+  doc,
+  getDoc,
+  collection,
+} from "firebase/firestore";
+const ItemComponent = ({ item, onPress, expanded }) => {
+  const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
+
+  // Animate item height based on expanded state
+  useEffect(() => {
+    Animated.timing(animatedHeight, {
+      toValue: expanded ? 420 : 140,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [expanded]);
+
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onPress}>
+        <Animated.View
+          style={[styles.itemContainer, { height: animatedHeight }]}
+        >
+          <View style={styles.itemOrderFlatList}>
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Mã đơn:</Text>
+              <Text style={styles.contentTitle}>{item.id}</Text>
+            </View>
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Người gửi:</Text>
+              <Text style={styles.contentTitle}>Fashion Shop</Text>
+            </View>
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Người nhận:</Text>
+              <Text style={styles.contentTitle}>{item.displayName}</Text>
+            </View>
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Số điện thoại:</Text>
+              <Text style={styles.contentTitle}>{item.phoneNumber}</Text>
+            </View>
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Địa chỉ:</Text>
+              <Text style={styles.contentTitle}>{item.address}</Text>
+            </View>
+
+            {expanded && (
+              <View>
+                <View style={styles.itemLineOrderFlatList}>
+                  <Text style={styles.title}>Sản phẩm:</Text>
+                  <Text style={styles.contentTitle}>{item.productNames}</Text>
+                </View>
+
+                <View style={styles.itemLineOrderFlatList}>
+                  <Text style={styles.title}>Total amount:</Text>
+                  <Text style={styles.contentTitle}>${item.totalPrice}</Text>
+                </View>
+                <View style={styles.itemLineOrderFlatList}>
+                  <Text style={styles.title}>PT thanh toán:</Text>
+                  <Text style={styles.contentTitle}>
+                    {item.paymentMethodName}
+                  </Text>
+                </View>
+                <View style={styles.itemLineOrderFlatList}>
+                  <Text
+                    style={[
+                      styles.contentTitle,
+                      { color: "black", fontWeight: "bold" },
+                    ]}
+                  >
+                    Tổng: {item.items.length} sản phẩm.
+                  </Text>
+                </View>
+                <View style={[styles.itemLineOrderFlatList, {justifyContent:'flex-end'}]}>
+                  <TouchableOpacity
+                    style={[styles.touch, { backgroundColor: "red" }]}
+                  >
+                    <Text style={styles.textTouch}>Hủy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.touch, { marginLeft:10,backgroundColor: "green" }]}
+                  >
+                    <Text style={styles.textTouch}>Nhận đơn</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </Animated.View>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const Received = () => {
-  return (
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null); // Track expanded item
 
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="blue" />
-      </View>
+  useEffect(() => {
+    const q = query(orderRef, where("orderStatusId", "==", "4"));
 
+    const unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        console.log("Orders snapshot received:", snapshot.size); // Log snapshot size
+        const ordersData = await Promise.all(
+          snapshot.docs.map(async (docSnapshot) => {
+            const order = docSnapshot.data(); // Use docSnapshot to get data
+            const userId = order.userId; // Extract userId from the order data
+            const paymentMethodId = order.paymentMethodId; // Extract paymentMethodId from the order data
+
+            let paymentMethodName = "Unknown Payment Method"; // Default value for payment method name
+
+            try {
+              // Reference the users collection
+              const userRef = collection(db, "users");
+              // Get the specific user document
+              const userDoc = await getDoc(doc(userRef, userId));
+
+              if (userDoc.exists()) {
+                console.log("User data:", userDoc.data()); // Log user data
+                const { displayName, phoneNumber } = userDoc.data();
+
+                // Now get the payment method name
+                const paymentMethodsRef = collection(db, "paymentMethod"); // Reference to the paymentMethods collection
+                const paymentMethodDoc = await getDoc(
+                  doc(paymentMethodsRef, paymentMethodId)
+                ); // Get the payment method document
+
+                if (paymentMethodDoc.exists()) {
+                  const paymentMethodData = paymentMethodDoc.data();
+                  paymentMethodName = paymentMethodData.paymentMethodName; // Assume the field is 'name'
+                } else {
+                  console.warn(
+                    `Payment method not found for paymentMethodId: ${paymentMethodId}`
+                  );
+                }
+
+                // Extract product names from the order items
+                const productNames = order.items
+                  .map((item) => item.title)
+                  .join("\n"); // Join names as a string
+
+                return {
+                  id: docSnapshot.id, // Use docSnapshot.id here
+                  ...order,
+                  displayName: displayName,
+                  phoneNumber: phoneNumber,
+                  paymentMethodName: paymentMethodName,
+                  productNames: productNames,
+                };
+              } else {
+                console.warn(`User not found for userId: ${userId}`);
+                return {
+                  id: docSnapshot.id,
+                  ...order,
+                  displayName: "Unknown User",
+                  userPhone: "No Phone",
+                  paymentMethodName: paymentMethodName, // Default value
+                  productNames: "No Products", // Default value if no user found
+                };
+              }
+            } catch (error) {
+              console.error(
+                `Error fetching user or payment method data:`,
+                error
+              );
+              return {
+                id: docSnapshot.id,
+                ...order,
+                displayName: "Error",
+                userPhone: "Error",
+                paymentMethodName: paymentMethodName, // Default value
+                productNames: "Error retrieving products", // Default value
+              };
+            }
+          })
+        );
+
+        setOrders(ordersData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching real-time orders: ", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+  const handlePress = (id) => {
+    setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
+  };
+
+  const renderItem = ({ item }) => (
+    <ItemComponent
+      item={item}
+      expanded={item.id === expandedId}
+      onPress={() => handlePress(item.id)}
+    />
   );
-}
 
-export default Received
+  return (
+    <View style={styles.container}>
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color="blue" />
+        </View>
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+        />
+      )}
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({})
+export default Received;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#DCDCDC",
+  },
+  itemContainer: {
+    marginTop: 10,
+    marginHorizontal: 10,
+    borderRadius: 5,
+    overflow: "hidden",
+  },
+  itemOrderFlatList: {
+    padding: 10,
+    flexDirection: "column",
+    backgroundColor: "white",
+    borderRadius: 10,
+  },
+  itemLineOrderFlatList: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    marginVertical: 4,
+  },
+  title: {
+    flex: 0.5,
+    fontSize: 17,
+    color: "black",
+    fontWeight: "bold",
+  },
+  contentTitle: {
+    fontSize: 17,
+    color: "black",
+    flex: 1,
+    overflow: "hidden", // Hide overflow
+  },
+  touch: {
+    borderRadius: 20,
+    width: "35%",
+    marginTop: 10,
+  },
+  textTouch: {
+    fontSize: 20,
+    padding: 3,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
+  },
+});
