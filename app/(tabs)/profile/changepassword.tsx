@@ -192,8 +192,8 @@ const ChangePasswordScreen = () => {
               flexDirection: 'row',
               alignItems: 'center',
               paddingVertical: 10,
-            }}>
-            <TextInput
+            }}>            
+           <TextInput
               style={styles.input}
               placeholder="Enter current password"
               autoCapitalize="none"
