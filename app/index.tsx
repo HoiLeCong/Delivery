@@ -42,16 +42,16 @@ const LoginScreen = () => {
        router.push("/(tabs)/home");
      } else {
        console.log("Shipper not found, checking users...");
-       const userDoc = await getDoc(doc(db, "users", userId));
-       if (userDoc.exists()) {
-         console.log("User found, navigating to user app.");
-         router.push("/(tabs)/home");
-       } else {
-         Alert.alert(
-           "Login Error",
-           "This account is not authorized for either app."
-         );
-       }
+      //  const userDoc = await getDoc(doc(db, "users", userId));
+      //  if (userDoc.exists()) {
+      //    console.log("User found, navigating to user app.");
+      //    router.push("/(tabs)/home");
+      //  } else {
+      //    Alert.alert(
+      //      "Login Error",
+      //      "This account is not authorized for either app."
+      //    );
+      //  }
      }
    } catch (error) {
      console.error("Error logging in:", error.code, error.message);
@@ -60,8 +60,6 @@ const LoginScreen = () => {
      setIsLoading(false);
    }
  };
-
-
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
