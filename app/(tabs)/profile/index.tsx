@@ -37,7 +37,8 @@ const ProfileScreen = () => {
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => Alert.alert('Logout') }
+        //onPress={() => Alert.alert('Logout') }
+        onPress={() => router.push("../app/index") }
         style={styles.touchableOpacity}
       >
         <AntDesign
