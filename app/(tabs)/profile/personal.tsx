@@ -1,30 +1,46 @@
-// import { StyleSheet, Text, View } from 'react-native'
-// import React from 'react'
 
-// const PersonalDetailsScreen = () => {
-//   return (
-//     <View>
-//       <Text>PersonalDetailsScreen</Text>
-//     </View>
-//   )
-// }
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import   
+ { getAuth } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';   
+
 
 const PersonalDetailsScreen = () => {
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [deliveryPerson, setDeliveryPerson] = useState({
+    avatar: null,
+    email: '',
+    phoneNumber: '',
+  });
 
+  useEffect(() => {
+    const fetchDeliveryPersonData = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+          const db = getFirestore();
+          const userDocRef = doc(db, 'shippers', user.uid); // Assuming 'delivery_persons' is your collection
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            setDeliveryPerson({
+              avatar: userDocSnap.data().avatar || null,
+              email: userDocSnap.data().email || '',
+              phoneNumber: userDocSnap.data().phoneNumber || '',
+            });
+          } else {
+            console.log('No such document!');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching delivery person data:', error);
+      }
+    };
+
+    fetchDeliveryPersonData();
+  }, []);
   return (
-    <ScrollView style={styles.container}>
     <View style={styles.container}>
       {/* Avatar Section */}
       <View style={styles.avatarContainer}>
@@ -36,26 +52,27 @@ const PersonalDetailsScreen = () => {
           <Text style={styles.editIcon}>✏️</Text>
         </TouchableOpacity>
       </View>
-
       {/* Personal Details Section */}
       <Text style={styles.heading}>Personal Details</Text>
 
       {/* Email Input */}
       <TextInput
         style={styles.input}
-        value={email}
-        onChangeText={setEmail}
+        value={deliveryPerson.email} // Set the value from state
+        onChangeText={(text) => setDeliveryPerson({ ...deliveryPerson, email: text })}
         placeholder="Email Address"
         keyboardType="email-address"
+        editable={false} // Make the field non-editable
       />
 
       {/* Phone Number Input */}
       <TextInput
         style={styles.input}
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
+        value={deliveryPerson.phoneNumber} // Set the value from state
+        onChangeText={(text) => setDeliveryPerson({ ...deliveryPerson, phoneNumber: text })}
         placeholder="Phone number"
         keyboardType="phone-pad"
+        editable={false} // Make the field non-editable
       />
 
       {/* Save Button */}
@@ -63,7 +80,6 @@ const PersonalDetailsScreen = () => {
         <Text style={styles.saveButtonText}>Save</Text>
       </TouchableOpacity>
     </View>
-    </ScrollView>
   );
 };
 
@@ -123,4 +139,81 @@ const styles = StyleSheet.create({
 
 export default PersonalDetailsScreen
 
-//const styles = StyleSheet.create({})
+
+// import { View, Text, Image, StyleSheet } from 'react-native';
+// import { getAuth } from 'firebase/auth';
+// import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+// const PersonalDetailsScreen= () => {
+//   const [deliveryPerson, setDeliveryPerson] = useState({
+//     avatar: null,
+//     email: '',
+//     phoneNumber: '',
+//   });
+
+//   useEffect(() => {
+//     const fetchDeliveryPersonData = async () => {
+//       try {
+//         const auth = getAuth();
+//         const user = auth.currentUser;
+//         if (user) {
+//           const db = getFirestore();
+//           const userDocRef = doc(db, 'delivery_persons', user.uid);
+//           const userDocSnap = await getDoc(userDocRef);
+
+//           if (userDocSnap.exists()) {
+//             setDeliveryPerson({
+//               avatar: userDocSnap.data().avatar || null,
+//               email: userDocSnap.data().email || '',
+//               phoneNumber: userDocSnap.data().phoneNumber || '',
+//             });
+//           } else {
+//             // Handle case where delivery person document doesn't exist
+//             console.log('No such document!');
+//           }
+//         }
+//       } catch (error) {
+//         console.error('Error fetching delivery person data:', error);
+//       }
+//     };
+
+//     fetchDeliveryPersonData();
+//   }, []);
+
+//   return (
+//     <View style={styles.container}>
+//       {deliveryPerson.avatar ? (
+//         <Image source={{ uri: deliveryPerson.avatar }} style={styles.avatar} />
+//       ) : (
+//         <Image
+//           source={require('../assets/images/icon')} 
+//           style={styles.avatar}
+//         />
+//       )}
+//       <Text style={styles.email}>{deliveryPerson.email}</Text>
+//       <Text style={styles.phoneNumber}>{deliveryPerson.phoneNumber}</Text>
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     alignItems: 'center',
+//     padding: 20,
+//   },
+//   avatar: {
+//     width: 100,
+//     height: 100,
+//     borderRadius: 50,
+//     marginBottom: 10,
+//   },
+//   email: {
+//     fontSize: 16,
+//     marginBottom: 5,
+//   },
+//   phoneNumber: {
+//     fontSize: 16,
+//   },
+// });
+
+// export default PersonalDetailsScreen;
