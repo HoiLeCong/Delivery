@@ -1,24 +1,4 @@
 
-// import {
-//   Button,
-//   Image,
-//   ScrollView,
-//   StyleSheet,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   View,
-//   Alert,
-// } from "react-native";
-// import React, { useState } from "react";
-// import { Link, router } from "expo-router";
-// import { Ionicons } from "@expo/vector-icons";
-// import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-// import {firebaseConfig}  from "../src/firebase/firebaseConfig"; // Import your Firebase config
-// import { initializeApp } from "firebase/app";
-// import { getFirestore, doc, getDoc,} from "firebase/firestore";
-// import { FirebaseError } from 'firebase/app';
-// import {  ActivityIndicator } from "react-native"; 
 import {
   Button,
   Image,
@@ -55,68 +35,7 @@ const LoginScreen = () => {
   };
 
 
-  // const handleLogin = async () => {
-  //   try {
-  //     console.log("Email:", email); // In ra giá trị của email
-  //     console.log("Password:", password); // In ra giá trị của password
-  //     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  //     const user = userCredential.user;
-
-  //      console.log("User credential:", userCredential);   
-  //     // In ra kết quả của signInWithEmailAndPassword
-  //        console.log("User:", user); // 
-  //       router.replace("/home"); 
-  //   } catch (error) {
-  //     if (error instanceof FirebaseError) { 
-  //       Alert.alert("Login Error", error.message);
-  //     } else if (error instanceof Error) {
-  //       Alert.alert("Login Error", error.message);
-  //     } else {
-  //       Alert.alert("Login Error", "An unknown error occurred.");
-  //     }
-  //   }
-  //   // if (email && password) {
-  //   //   setIsLoading(true);
-  //   //   try {
-  //   //     const userCredential = await auth().signInWithEmailAndPassword(
-  //   //       email,
-  //   //       password,
-  //   //     );
-  //   //     const usershiper = userCredential.user;
-
-  //   //     if (usershiper) {
-  //   //       const data = {
-  //   //         // uid: usershiper.uid,
-  //   //         // email: usershiper.email ?? '',
-  //   //         // displayName: usershiper.displayName ?? '',
-  //   //         // emailVerified: user.emailVerified,
-  //   //         // photoUrl: user.photoURL,
-  //   //         // creationTime: user.metadata.creationTime,
-  //   //         // lastSignInTime: user.metadata.lastSignInTime,
-  //   //         fullName: usershiper.fullName,
-  //   //       email: usershiper.email ?? '',
-  //   //       phoneNumber: usershiper.phoneNumber??'',
-  //   //       CIN: usershiper.CIN,
-  //   //       DateOfIssuance: usershiper.dateOfIssuance,
-  //   //       avatar: usershiper.avatarUrl,
-  //   //       image_CCCD_card_front: usershiper.frontUrl,
-  //   //       image_CCCD_card_back: usershiper.backUrl,
-  //   //       files_card_front: usershiper.filesFront.map(),
-  //   //       files_card_back: usershiper.filesBack.map(),
-  //   //       };
-  //   //       dispatch(addAuth(data));
-  //   //       await AsyncStorage.setItem(localDataNames.auth, JSON.stringify(data));
-  //   //       await auth.UpdateProfile();
-  //   //     }
-  //   //     setIsLoading(false);
-  //   //   } catch (error) {
-  //   //     console.log(error);
-  //   //     setIsLoading(false);
-  //   //   }
-  //   // } else {
-  //   //   console.log('Missing values');
-  //   // }
-  // };
+ 
   const handleLogin = async () => {
     setIsLoading(true);
     try {
