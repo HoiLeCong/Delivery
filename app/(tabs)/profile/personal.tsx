@@ -1,14 +1,10 @@
 
-// import React, { useState, useEffect } from 'react';
-// import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-// import   
-//  { getAuth } from 'firebase/auth';
-// import { getFirestore, doc, getDoc } from 'firebase/firestore';   
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
-import   { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore'; 
-
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { updateEmail } from 'firebase/auth'; // Import hàm updateEmail
 
 const PersonalDetailsScreen = () => {
   const [deliveryPerson, setDeliveryPerson] = useState({
@@ -19,7 +15,6 @@ const PersonalDetailsScreen = () => {
   const [editing, setEditing] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
   const [editingPhoneNumber, setEditingPhoneNumber] = useState(false);
-  // useEffect(() => {
   //   const fetchDeliveryPersonData = async () => {
   //     try {
   //       const auth = getAuth();
@@ -74,23 +69,31 @@ const PersonalDetailsScreen = () => {
     fetchDeliveryPersonData();
   }, []);
 
-  // const handleSave = async () => { // Hàm xử lý khi nhấn nút "Lưu"
+  // const handleSave = async () => {
   //   try {
   //     const auth = getAuth();
   //     const user = auth.currentUser;
   //     if (user) {
   //       const db = getFirestore();
   //       const userDocRef = doc(db, 'shippers', user.uid);
-  //       // Cập nhật số điện thoại trong Firestore
-  //       await updateDoc(userDocRef, { 
+
+  //       // Cập nhật email và số điện thoại
+  //       await updateDoc(userDocRef, {
+  //         email: deliveryPerson.email, 
   //         phoneNumber: deliveryPerson.phoneNumber,
   //       });
-  //       setEditingPhoneNumber(false); // Đặt lại trạng thái chỉnh sửa thành false
-  //       Alert.alert('Thành công', 'Số điện thoại đã được cập nhật!');
+
+  //       setEditing(false);
+  //       Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
+  //       // Cập nhật email trên Firebase Authentication
+  //       await updateEmail(user, deliveryPerson.email); 
+
+  //       setEditing(false);
+  //       Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
   //     }
   //   } catch (error) {
-  //     console.error('Lỗi khi cập nhật số điện thoại:', error);
-  //     Alert.alert('Lỗi', 'Không thể cập nhật số điện thoại.');
+  //     console.error('Lỗi khi cập nhật thông tin:', error);
+  //     Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
   //   }
   // };
   const handleSave = async () => {
@@ -100,13 +103,20 @@ const PersonalDetailsScreen = () => {
       if (user) {
         const db = getFirestore();
         const userDocRef = doc(db, 'shippers', user.uid);
+  
+        // Cập nhật email và số điện thoại
         await updateDoc(userDocRef, {
-          email: deliveryPerson.email,
+          email: deliveryPerson.email, 
           phoneNumber: deliveryPerson.phoneNumber,
         });
-        setEditingEmail(false);
-        setEditingPhoneNumber(false);
-        Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
+  
+        setEditing(false);
+              Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
+              // Cập nhật email trên Firebase Authentication
+              await updateEmail(user, deliveryPerson.email); 
+      
+              setEditing(false);
+              Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin:', error);

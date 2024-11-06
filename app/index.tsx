@@ -54,19 +54,7 @@ const LoginScreen = () => {
       if (shipperDoc.exists()) {
         console.log("Shipper found, navigating to shipper app.");
         router.push("/(tabs)/home");
-      } else {
-        console.log("Shipper not found, checking users...");
-        const userDoc = await getDoc(doc(db, "users", userId));
-        if (userDoc.exists()) {
-          console.log("User found, navigating to user app.");
-          router.push("/(tabs)/home");
-        } else {
-          Alert.alert(
-            "Login Error",
-            "This account is not authorized for either app."
-          );
-        }
-      }
+      } 
     } catch (error) {
       console.error("Error logging in:", error);
       Alert.alert("Login Error", error.message);
@@ -202,16 +190,4 @@ function dispatch(arg0: any) {
   throw new Error("Function not implemented.");
 }
 
-function addAuth(data: {
-  // uid: usershiper.uid,
-  // email: usershiper.email ?? '',
-  // displayName: usershiper.displayName ?? '',
-  // emailVerified: user.emailVerified,
-  // photoUrl: user.photoURL,
-  // creationTime: user.metadata.creationTime,
-  // lastSignInTime: user.metadata.lastSignInTime,
-  fullName: any; email: any; phoneNumber: any; CIN: any; DateOfIssuance: any; avatar: any; image_CCCD_card_front: any; image_CCCD_card_back: any; files_card_front: any; files_card_back: any;
-}): any {
-  throw new Error("Function not implemented.");
-}
 

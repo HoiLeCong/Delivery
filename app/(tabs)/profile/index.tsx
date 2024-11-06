@@ -2,10 +2,24 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { Link, router } from 'expo-router'
 import { AntDesign, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { getAuth, signOut } from 'firebase/auth'; // Import Firebase Authentication
+
 
 
 
 const ProfileScreen = () => {
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+      
+      // Chuyển hướng đến màn hình đăng nhập sau khi đăng xuất
+      router.replace('/'); // Thay thế '/' bằng đường dẫn đến màn hình đăng nhập 
+    } catch (error) {
+      console.error('Lỗi khi đăng xuất:', error);
+      Alert.alert('Lỗi', 'Không thể đăng xuất.');
+    }
+  };
   return (
     <View
       style={{ flex: 1, paddingLeft: 10, paddingRight: 10, paddingTop: 20 }}
@@ -36,17 +50,8 @@ const ProfileScreen = () => {
         <Text style={styles.textTouch}>ChangPassword</Text>
         <Ionicons name="chevron-forward" size={24} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity
-        //onPress={() => Alert.alert('Logout') }
-        onPress={() => router.push("../app/index") }
-        style={styles.touchableOpacity}
-      >
-        <AntDesign
-          name="logout"
-          size={24}
-          color="black"
-          style={{ flex: 0.1 }}
-        />
+      <TouchableOpacity onPress={handleLogout} style={styles.touchableOpacity}>
+        <AntDesign name="logout" size={24} color="black" style={{ flex: 0.1 }} />
         <Text style={styles.textTouch}>Logout</Text>
       </TouchableOpacity>
     </View>
