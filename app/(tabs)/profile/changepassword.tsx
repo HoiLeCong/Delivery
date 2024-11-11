@@ -11,10 +11,8 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';   
 
-import Ionicons from 'react-native-vector-icons/Ionicons';   
-
-import auth from 'firebase/auth';
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import Ionicons from '@expo/vector-icons/build/Ionicons';
 
 
 // Change Password for Shipper
@@ -38,41 +36,6 @@ const ChangePasswordScreen = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  // const handleChangePassword = async () => {
-  //   setIsLoading(true); 
-  //   try {
-  //     const authInstance = getAuth(); // Get auth instance
-  //     const user = authInstance.currentUser;
-
-  //     if (!user) {
-  //       throw new Error("User not found");
-  //     }
-
-  //     // Re-authenticate the user
-  //     const credential = EmailAuthProvider.credential(
-  //       user.email!, 
-  //       currentPassword
-  //     );
-  //     await reauthenticateWithCredential(user, credential);  
-
-
-  //     if (newPassword !== confirmNewPassword) {
-  //       throw new Error("New password and confirm password do not match");
-  //     }
-
-  //     // Update the password
-  //     await updatePassword(user, newPassword);
-
-  //     Alert.alert('Success', 'Password changed successfully!');
-  //     setCurrentPassword('');
-  //     setNewPassword('');
-  //     setConfirmNewPassword('');
-
-  //   } catch (error: any) {
-  //     Alert.alert('Error', error.message); 
-  //   } finally {
-  //     setIsLoading(false); 
-  //   }
   const handleChangePassword = async () => {
     setIsLoading(true); 
     try {
