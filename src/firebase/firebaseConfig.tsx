@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { collection, getFirestore, } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
 const firebaseConfig = {
@@ -17,6 +18,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+isSupported()
+  .then((supported) => {
+    if (supported) {
+      getAnalytics(app);
+    }
+  })
+  .catch((error) => {
+    console.error("Analytics không được hỗ trợ:", error);
+  });
+
 const orderRef = collection(db, 'orders');
 const userRef = collection(db, "users");
 
