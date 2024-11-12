@@ -30,7 +30,9 @@ isSupported()
   });
 
 const orderRef = collection(db, 'orders');
+const orderHistoryRef = collection(db, "orderHistory");
+const deliveryHistoryRef = collection(db, "deliveryHistory");
 const userRef = collection(db, "users");
 
-export { auth, db, orderRef, userRef };
+export { auth, db, orderRef, userRef, orderHistoryRef, deliveryHistoryRef };
 
