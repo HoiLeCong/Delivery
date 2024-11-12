@@ -44,7 +44,7 @@
 import { initializeApp } from "firebase/app";
 import { collection, getFirestore, } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 
 const firebaseConfig = {

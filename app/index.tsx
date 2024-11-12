@@ -1,4 +1,3 @@
-
 import {
   Button,
   Image,
@@ -11,20 +10,14 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import   
- { Link, router } from "expo-router";
+import { Link, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { db, firebaseConfig } from "../src/firebase/firebaseConfig"; 
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { FirebaseError } from 'firebase/app';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../src/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 import { ActivityIndicator } from "react-native";
-//import auth from "../src/firebase/firebaseConfig"; 
+//import auth from "../src/firebase/firebaseConfig";
 
-
-
-const auth = getAuth(initializeApp(firebaseConfig)); 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,8 +27,6 @@ const LoginScreen = () => {
     setShowPassword(!showPassword);
   };
 
-
- 
   const handleLogin = async () => {
     setIsLoading(true);
     try {
@@ -47,14 +38,14 @@ const LoginScreen = () => {
       );
       const userId = userCredential.user.uid;
       console.log("User logged in. User ID:", userId);
- 
+
       // Check if the user is a shipper
       const shipperDoc = await getDoc(doc(db, "shippers", userId));
       console.log("Checking shipper document existence...");
       if (shipperDoc.exists()) {
         console.log("Shipper found, navigating to shipper app.");
         router.push("/(tabs)/home");
-      } 
+      }
     } catch (error) {
       console.error("Error logging in:", error);
       Alert.alert("Login Error", error.message);
@@ -132,13 +123,17 @@ const LoginScreen = () => {
         >
           Forgot password
         </Link>
-        <TouchableOpacity style={styles.touch} onPress={handleLogin} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#ffffff" />
-        ) : (
-          <Text style={styles.textTouch}>Login</Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.touch}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={styles.textTouch}>Login</Text>
+          )}
+        </TouchableOpacity>
         {/* <TouchableOpacity style={styles.touch} onPress={handleLogin}> 
           <Text style={styles.textTouch}>Login</Text>
         </TouchableOpacity> */}
@@ -150,44 +145,42 @@ const LoginScreen = () => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "white",
-      padding: 15,
-    },
-    customText: {
-      fontSize: 20,
-      color: "black",
-    },
-    input: {
-      width: "100%",
-      backgroundColor: "#F6F7FB",
-      height: 58,
-      marginBottom: 10,
-      fontSize: 16,
-      borderRadius: 10,
-      padding: 12,
-    },
-    toggleButton: {
-      position: "absolute",
-      right: 10,
-      top: 26,
-    },
-    touch: {
-      backgroundColor: "#ff7891",
-      alignItems: "center",
-      borderRadius: 30,
-      padding: 12,
-      marginTop: 10,
-    },
-    textTouch: {
-      color: "white",
-      fontWeight: "bold",
-      fontSize: 20,
-    },
-  });
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+    padding: 15,
+  },
+  customText: {
+    fontSize: 20,
+    color: "black",
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#F6F7FB",
+    height: 58,
+    marginBottom: 10,
+    fontSize: 16,
+    borderRadius: 10,
+    padding: 12,
+  },
+  toggleButton: {
+    position: "absolute",
+    right: 10,
+    top: 26,
+  },
+  touch: {
+    backgroundColor: "#ff7891",
+    alignItems: "center",
+    borderRadius: 30,
+    padding: 12,
+    marginTop: 10,
+  },
+  textTouch: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 20,
+  },
+});
 function dispatch(arg0: any) {
   throw new Error("Function not implemented.");
 }
-
-
