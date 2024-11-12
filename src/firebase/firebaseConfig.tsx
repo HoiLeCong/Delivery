@@ -33,7 +33,10 @@ isSupported()
     console.error("Analytics không được hỗ trợ:", error);
   });
 
-const orderRef = collection(db, "orders");
+const orderRef = collection(db, 'orders');
+const orderHistoryRef = collection(db, "orderHistory");
+const deliveryHistoryRef = collection(db, "deliveryHistory");
 const userRef = collection(db, "users");
 
-export { auth, db, orderRef, userRef, firebaseConfig };
+export { auth, db, orderRef, userRef, orderHistoryRef, deliveryHistoryRef };
+

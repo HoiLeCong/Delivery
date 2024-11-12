@@ -13,7 +13,13 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { auth, db, orderRef } from "@/src/firebase/firebaseConfig";
+import {
+  auth,
+  db,
+  deliveryHistoryRef,
+  orderHistoryRef,
+  orderRef,
+} from "@/src/firebase/firebaseConfig";
 import {
   query,
   where,
@@ -22,8 +28,8 @@ import {
   getDoc,
   collection,
   updateDoc,
+  setDoc,
 } from "firebase/firestore";
-import Dialog from 'react-native-dialog'
 
 const ItemComponent = ({
   item,
@@ -31,7 +37,7 @@ const ItemComponent = ({
   expanded,
   handleCancelOrder,
   handleSuccess,
-  handleReturn
+  handleReturn,
 }) => {
   const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
 
@@ -162,13 +168,15 @@ const Delivery = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const shipperId = auth.currentUser?.uid
+
   useEffect(() => {
     const shipperId = auth.currentUser?.uid;
 
     if (!shipperId) {
       console.warn("No authenticated user found.");
       setLoading(false);
-      return; 
+      return;
     }
 
     const q = query(
@@ -260,66 +268,114 @@ const Delivery = () => {
     setSelectedOrderId(orderId);
     setCancelModalVisible(true);
   };
-  // const handleCancelOrder = async (orderId) => {
-  //   try {
-  //     const orderDocRef = doc(orderRef, orderId);
-  //     await updateDoc(orderDocRef, {
-  //       orderStatusId: "7",
-  //     });
-  //     console.log(
-  //       `Order ${orderId} has been confirmed with shipper ID: ${shipperId}`
-  //     );
-  //   } catch (error) {
-  //     console.error("Error confirming order:", error);
-  //   }
-  // };
- const handleCancelOrderConfirm = async () => {
-   if (!cancelReason.trim()) {
-     Alert.alert("Lý do hủy không được để trống.");
-     return;
-   }
 
-   try {
-     const orderDocRef = doc(orderRef, selectedOrderId);
-     await updateDoc(orderDocRef, {
-       orderStatusId: "7",
-       cancelReason: cancelReason,
-     });
-     console.log(
-       `Order ${selectedOrderId} has been cancelled with reason: ${cancelReason}`
-     );
-     setCancelModalVisible(false);
-     setCancelReason("");
-   } catch (error) {
-     console.error("Error cancelling order:", error);
-   }
- };
+  const handleCancelOrderConfirm = async () => {
+    if (!cancelReason.trim()) {
+      Alert.alert("Lý do hủy không được để trống.");
+      return;
+    }
+
+    try {
+      const orderDocRef = doc(orderRef, selectedOrderId);
+      const orderSnapshot = await getDoc(orderDocRef);
+
+      if (orderSnapshot.exists()) {
+        const orderData = orderSnapshot.data();
+
+        await updateDoc(orderDocRef, {
+          orderStatusId: "7",
+          cancelReason: cancelReason,
+        });
+
+        const userId = orderData.userId;
+        const orderHistoryDocRef = doc(
+          collection(orderHistoryRef, userId, "userOrders"),
+          selectedOrderId
+        );
+
+        await setDoc(orderHistoryDocRef, {
+          ...orderData,
+          orderStatusId: "7",
+          cancelReason: cancelReason,
+        });
+
+        const deliveryHistoryDocRef = doc(
+          deliveryHistoryRef, shipperId, "orders",
+          selectedOrderId
+        );
+        await setDoc(deliveryHistoryDocRef, {
+          ...orderData,
+          orderStatusId: "7",
+          cancelReason: cancelReason,
+        });
+
+        console.log(
+          `Order ${selectedOrderId} has been canceled and moved to orderHistory.`
+        );
+        setCancelModalVisible(false);
+        setCancelReason("");
+      } else {
+        console.log("Order not found.");
+      }
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+    }
+  };
+
   const handleSuccess = async (orderId) => {
     try {
-      const orderDocRef = doc(orderRef, orderId)
-      await updateDoc(orderDocRef , {
-        orderStatusId : "6"
-      })
-      setShowModal(true);
+      const orderDocRef = doc(orderRef, orderId);
+      const orderSnapshot = await getDoc(orderDocRef);
 
-      // Ẩn modal sau 3 giây
-      setTimeout(() => {
-        setShowModal(false);
-      }, 3000);
+      if (orderSnapshot.exists()) {
+        const orderData = orderSnapshot.data();
+        await updateDoc(orderDocRef, {
+          orderStatusId: "6",
+        });
+
+        const userId = orderData.userId;
+        const orderHistoryDocRef = doc(
+          orderHistoryRef,
+          userId,
+          "userOrders",
+          orderId
+        );
+
+        await setDoc(orderHistoryDocRef, {
+          ...orderData,
+          orderStatusId: "6",
+        });
+         const deliveryHistoryDocRef = doc(
+          deliveryHistoryRef, shipperId, 'orders', orderId
+         )
+         await setDoc(deliveryHistoryDocRef, {
+           ...orderData,
+           orderStatusId: "6",
+         });
+        setShowModal(true);
+        setTimeout(() => {
+          setShowModal(false);
+        }, 3000);
+
+        console.log("Order updated and moved to orderHistory as delivered.");
+      } else {
+        console.log("Order not found.");
+      }
     } catch (error) {
       console.error("Error success order:", error);
     }
   };
-   const handleReturn = async (orderId) => {
+
+  const handleReturn = async (orderId) => {
     try {
-      const orderDocRef = doc( orderRef, orderId)
+      const orderDocRef = doc(orderRef, orderId);
       await updateDoc(orderDocRef, {
-        orderStatusId : '8'
-      })
+        orderStatusId: "8",
+      });
     } catch (error) {
-       console.error("Error return order:", error);
+      console.error("Error return order:", error);
     }
-   };
+  };
   const handlePress = (id) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
