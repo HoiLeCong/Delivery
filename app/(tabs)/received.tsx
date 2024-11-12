@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { auth, db, orderRef } from "@/src/firebase/firebaseConfig";
+import { auth, db, deliveryHistoryRef, orderRef } from "@/src/firebase/firebaseConfig";
 import {
   query,
   where,
@@ -18,6 +18,7 @@ import {
   getDoc,
   collection,
   updateDoc,
+  setDoc,
 } from "firebase/firestore";
 const ItemComponent = ({ item, onPress, expanded, handleCancelOrder, handleConfirmReceived }) => {
   const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
@@ -231,17 +232,53 @@ const Received = () => {
       }
     } 
   
-    const handleConfirmReceived = async(orderId) => {
+    // const handleConfirmReceived = async(orderId) => {
       
+    //   try {
+    //     const orderDocRef = doc(orderRef, orderId);
+    //     await updateDoc(orderDocRef, {
+    //       orderStatusId :'5'
+    //     })
+    //   } catch (error) {
+    //     console.log('Error order', error.message)
+    //   }
+    // }
+    const handleConfirmReceived = async (orderId) => {
       try {
+        const userId = auth.currentUser?.uid;
+
+        if (!userId) {
+          console.error("User not authenticated");
+          return;
+        }
         const orderDocRef = doc(orderRef, orderId);
+
         await updateDoc(orderDocRef, {
-          orderStatusId :'5'
-        })
+          orderStatusId: "5", 
+        });
+
+        const deliveryHistoryDocRef = doc(
+          collection(deliveryHistoryRef, userId, "orders"),
+          orderId
+        );
+        const orderSnapshot = await getDoc(orderDocRef);
+        if (orderSnapshot.exists()) {
+          const orderData = orderSnapshot.data();
+
+          await setDoc(deliveryHistoryDocRef, {
+            ...orderData,
+            orderStatusId: "5",
+            confirmedAt: new Date(), 
+          });
+        } else {
+          console.log("Order not found");
+        }
       } catch (error) {
-        console.log('Error order', error.message)
+        console.log("Error in order handling:", error.message);
       }
-    }
+    };
+
+
   const handlePress = (id) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
