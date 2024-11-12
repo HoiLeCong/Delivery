@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+//import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { updateEmail } from 'firebase/auth'; // Import hàm updateEmail
 
 const PersonalDetailsScreen = () => {
@@ -15,32 +14,7 @@ const PersonalDetailsScreen = () => {
   const [editing, setEditing] = useState(false);
   const [editingEmail, setEditingEmail] = useState(false);
   const [editingPhoneNumber, setEditingPhoneNumber] = useState(false);
-  //   const fetchDeliveryPersonData = async () => {
-  //     try {
-  //       const auth = getAuth();
-  //       const user = auth.currentUser;
-  //       if (user) {
-  //         const db = getFirestore();
-  //         const userDocRef = doc(db, 'shippers', user.uid); 
-  //         const userDocSnap = await getDoc(userDocRef);
 
-  //         if (userDocSnap.exists()) {
-  //           setDeliveryPerson({
-  //             avatar: userDocSnap.data().avatar || null,
-  //             email: userDocSnap.data().email || '',
-  //             phoneNumber: userDocSnap.data().phoneNumber || '',
-  //           });
-  //         } else {
-  //           console.log('No such document!');
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching delivery person data:', error);
-  //     }
-  //   };
-
-  //   fetchDeliveryPersonData();
-  // }, []);
   useEffect(() => {
     const fetchDeliveryPersonData = async () => {
       try {
@@ -69,33 +43,6 @@ const PersonalDetailsScreen = () => {
     fetchDeliveryPersonData();
   }, []);
 
-  // const handleSave = async () => {
-  //   try {
-  //     const auth = getAuth();
-  //     const user = auth.currentUser;
-  //     if (user) {
-  //       const db = getFirestore();
-  //       const userDocRef = doc(db, 'shippers', user.uid);
-
-  //       // Cập nhật email và số điện thoại
-  //       await updateDoc(userDocRef, {
-  //         email: deliveryPerson.email, 
-  //         phoneNumber: deliveryPerson.phoneNumber,
-  //       });
-
-  //       setEditing(false);
-  //       Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
-  //       // Cập nhật email trên Firebase Authentication
-  //       await updateEmail(user, deliveryPerson.email); 
-
-  //       setEditing(false);
-  //       Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
-  //     }
-  //   } catch (error) {
-  //     console.error('Lỗi khi cập nhật thông tin:', error);
-  //     Alert.alert('Lỗi', 'Không thể cập nhật thông tin.');
-  //   }
-  // };
   const handleSave = async () => {
     try {
       const auth = getAuth();
@@ -144,7 +91,7 @@ const PersonalDetailsScreen = () => {
         onChangeText={(text) => setDeliveryPerson({ ...deliveryPerson, email: text })}
         placeholder="Địa chỉ email"
         keyboardType="email-address"
-        editable={editing} 
+        editable={false} 
       />
 
       {/* Ô nhập số điện thoại */}
@@ -237,82 +184,3 @@ const styles = StyleSheet.create({
 
 
 export default PersonalDetailsScreen
-
-
-// import { View, Text, Image, StyleSheet } from 'react-native';
-// import { getAuth } from 'firebase/auth';
-// import { getFirestore, doc, getDoc } from 'firebase/firestore';
-
-// const PersonalDetailsScreen= () => {
-//   const [deliveryPerson, setDeliveryPerson] = useState({
-//     avatar: null,
-//     email: '',
-//     phoneNumber: '',
-//   });
-
-//   useEffect(() => {
-//     const fetchDeliveryPersonData = async () => {
-//       try {
-//         const auth = getAuth();
-//         const user = auth.currentUser;
-//         if (user) {
-//           const db = getFirestore();
-//           const userDocRef = doc(db, 'delivery_persons', user.uid);
-//           const userDocSnap = await getDoc(userDocRef);
-
-//           if (userDocSnap.exists()) {
-//             setDeliveryPerson({
-//               avatar: userDocSnap.data().avatar || null,
-//               email: userDocSnap.data().email || '',
-//               phoneNumber: userDocSnap.data().phoneNumber || '',
-//             });
-//           } else {
-//             // Handle case where delivery person document doesn't exist
-//             console.log('No such document!');
-//           }
-//         }
-//       } catch (error) {
-//         console.error('Error fetching delivery person data:', error);
-//       }
-//     };
-
-//     fetchDeliveryPersonData();
-//   }, []);
-
-//   return (
-//     <View style={styles.container}>
-//       {deliveryPerson.avatar ? (
-//         <Image source={{ uri: deliveryPerson.avatar }} style={styles.avatar} />
-//       ) : (
-//         <Image
-//           source={require('../assets/images/icon')} 
-//           style={styles.avatar}
-//         />
-//       )}
-//       <Text style={styles.email}>{deliveryPerson.email}</Text>
-//       <Text style={styles.phoneNumber}>{deliveryPerson.phoneNumber}</Text>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     alignItems: 'center',
-//     padding: 20,
-//   },
-//   avatar: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 50,
-//     marginBottom: 10,
-//   },
-//   email: {
-//     fontSize: 16,
-//     marginBottom: 5,
-//   },
-//   phoneNumber: {
-//     fontSize: 16,
-//   },
-// });
-
-// export default PersonalDetailsScreen;
