@@ -8,19 +8,11 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import {auth} from '../src/firebase/firebaseConfig'; 
-// import { sendPasswordResetEmail, updatePassword } from 'firebase/auth'; 
-// import { useNavigation } from '@react-navigation/native';
-// import { firestore } from '../src/firebase/firebaseConfig'; // Import Firestore
-// import { router } from 'expo-router';
-// import {userRef}from '../src/firebase/firebaseConfig'; 
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(''); 
-  //const navigation   = useNavigation();
-
-  //const [isChangePasswordMode, setIsChangePasswordMode] = useState(false);
 
   const handleSubmit = async () => {
     const emailRegex = /^\S+@\S+\.\S+$/;
@@ -29,64 +21,6 @@ const ForgotPassword = () => {
       return;
     }
 
-    // setIsLoading(true);
-    // setMessage('');
-
-    // if (isChangePasswordMode) {
-    //   // Change password logic
-    //   if (newPassword !== confirmPassword) {
-    //     setMessage('Mật khẩu mới và xác nhận mật khẩu không khớp.');
-    //     setIsLoading(false);
-    //     return;
-    //   }
-
-    //   try {
-    //     const user = auth.currentUser;
-    //     if (user) {
-    //       await updatePassword(user, newPassword);
-    //       setMessage('Mật khẩu đã được thay đổi!');
-    //       setNewPassword('');
-    //       setConfirmPassword('');
-
-    //       // Cập nhật Firestore sau khi thay đổi mật khẩu
-    //       const userRef = firestore.collection('users').doc(user.uid);
-    //       await userRef.update({ 
-    //         lastPasswordChange: new Date() 
-    //       });
-
-    //     } else {
-    //       setMessage('Vui lòng đăng nhập để thay đổi mật khẩu.');
-    //     }
-    //   } catch (error) {
-    //     console.error("Error updating password:", error);
-    //     setMessage('Đã có lỗi xảy ra khi thay đổi mật khẩu.');
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-
-    // } else {
-    //   // Forgot password logic (send reset email)
-    //   try {
-    //     await sendPasswordResetEmail(auth, email);
-    //     setMessage('Email đặt lại mật khẩu đã được gửi!');
-    //     setEmail('');
-    //     router.replace("/(tabs)/home"); 
-    //   } catch (error) {
-    //     console.error("Error sending password reset email:", error);
-    //     switch (error) {
-    //       case 'auth/user-not-found':
-    //         setMessage('Không tìm thấy tài khoản với email này.');
-    //         break;
-    //       case 'auth/invalid-email':
-    //         setMessage('Địa chỉ email không hợp lệ.');
-    //         break;
-    //       default:
-    //         setMessage('Đã có lỗi xảy ra.');
-    //     }
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // }
     setIsLoading(true);
     setMessage('');
     
@@ -111,63 +45,67 @@ const ForgotPassword = () => {
   };
   return (
     <View style={styles.container}>
-        <Text style={styles.title}>Quên mật khẩu?</Text>
-        <TextInput
-            style={styles.input}
-            placeholder="Nhập địa chỉ email của bạn"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-        />
-        {message ? <Text style={styles.message}>{message}</Text> : null}
-        <TouchableOpacity 
-            style={styles.button} 
-            onPress={handleSubmit} 
-            disabled={isLoading}
-        >
-            {isLoading ? (
-                <ActivityIndicator size="small" color="#fff" /> 
-            ) : (
-                <Text style={styles.buttonText}>Gửi</Text>
-            )}
-        </TouchableOpacity>
+      <TextInput
+        style={[styles.input,{marginTop: 20}]}
+        placeholder="Nhập địa chỉ email của bạn"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
+      <Text style={{color:'gray', marginBottom:10
+      }}>
+       We will send you a message to set or reset your new password
+      </Text>
+      {message ? <Text style={styles.message}>{message}</Text> : null}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleSubmit}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Gửi</Text>
+        )}
+      </TouchableOpacity>
     </View>
-);
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    padding: 10,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+    width: "100%",
+    backgroundColor: "#F6F7FB",
+    height: 58,
     marginBottom: 10,
-    paddingHorizontal: 10,
+    fontSize: 16,
+    borderRadius: 10,
+    padding: 12,
+    borderWidth:1
   },
   message: {
-    color: 'red',
+    color: "red",
     marginBottom: 20,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: "#ff7891",
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  }
+    color: "white",
+    fontWeight: "bold",
+    textAlign:'center'
+  },
 });
 
 export default ForgotPassword;

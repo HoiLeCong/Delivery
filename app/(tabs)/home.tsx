@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { db, orderRef } from "@/src/firebase/firebaseConfig";
+import { auth, db, orderRef } from "@/src/firebase/firebaseConfig";
 import {
   query,
   where,
@@ -17,8 +17,9 @@ import {
   doc,
   getDoc,
   collection,
+  updateDoc,
 } from "firebase/firestore";
-const ItemComponent = ({ item, onPress, expanded }) => {
+const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
   const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
 
   // Animate item height based on expanded state
@@ -29,6 +30,7 @@ const ItemComponent = ({ item, onPress, expanded }) => {
       useNativeDriver: false,
     }).start();
   }, [expanded]);
+
 
   return (
     <View style={styles.container}>
@@ -76,11 +78,16 @@ const ItemComponent = ({ item, onPress, expanded }) => {
                   </Text>
                 </View>
                 <View style={styles.itemLineOrderFlatList}>
-                  <Text style={[styles.contentTitle,{color :'black', fontWeight:'bold'}]}>
+                  <Text
+                    style={[
+                      styles.contentTitle,
+                      { color: "black", fontWeight: "bold" },
+                    ]}
+                  >
                     Tổng: {item.items.length} sản phẩm.
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.touch}>
+                <TouchableOpacity style={styles.touch} onPress={()=>handleConfirmOrder(item.id)}>
                   <Text style={styles.textTouch}>Nhận đơn</Text>
                 </TouchableOpacity>
               </View>
@@ -97,97 +104,120 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null); // Track expanded item
 
-useEffect(() => {
-  const q = query(orderRef, where("orderStatusId", "==", "3"));
+  useEffect(() => {
+    const q = query(orderRef, where("orderStatusId", "==", "3"));
+    const unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        console.log("Orders snapshot received:", snapshot.size); // Log snapshot size
+        const ordersData = await Promise.all(
+          snapshot.docs.map(async (docSnapshot) => {
+            const order = docSnapshot.data(); // Use docSnapshot to get data
+            const userId = order.userId; // Extract userId from the order data
+            const paymentMethodId = order.paymentMethodId; // Extract paymentMethodId from the order data
 
-  const unsubscribe = onSnapshot(
-    q,
-    async (snapshot) => {
-      console.log("Orders snapshot received:", snapshot.size); // Log snapshot size
-      const ordersData = await Promise.all(
-        snapshot.docs.map(async (docSnapshot) => {
-          const order = docSnapshot.data(); // Use docSnapshot to get data
-          const userId = order.userId; // Extract userId from the order data
-          const paymentMethodId = order.paymentMethodId; // Extract paymentMethodId from the order data
+            let paymentMethodName = "Unknown Payment Method"; // Default value for payment method name
 
-          let paymentMethodName = "Unknown Payment Method"; // Default value for payment method name
+            try {
+              // Reference the users collection
+              const userRef = collection(db, "users");
+              // Get the specific user document
+              const userDoc = await getDoc(doc(userRef, userId));
 
-          try {
-            // Reference the users collection
-            const userRef = collection(db, "users");
-            // Get the specific user document
-            const userDoc = await getDoc(doc(userRef, userId));
+              if (userDoc.exists()) {
+                
+                const { displayName, phoneNumber } = userDoc.data();
 
-            if (userDoc.exists()) {
-              console.log("User data:", userDoc.data()); // Log user data
-              const { displayName, phoneNumber } = userDoc.data();
+                // Now get the payment method name
+                const paymentMethodsRef = collection(db, "paymentMethod"); // Reference to the paymentMethods collection
+                const paymentMethodDoc = await getDoc(
+                  doc(paymentMethodsRef, paymentMethodId)
+                ); // Get the payment method document
 
-              // Now get the payment method name
-              const paymentMethodsRef = collection(db, "paymentMethod"); // Reference to the paymentMethods collection
-              const paymentMethodDoc = await getDoc(
-                doc(paymentMethodsRef, paymentMethodId)
-              ); // Get the payment method document
+                if (paymentMethodDoc.exists()) {
+                  const paymentMethodData = paymentMethodDoc.data();
+                  paymentMethodName = paymentMethodData.paymentMethodName; // Assume the field is 'name'
+                } else {
+                  console.warn(
+                    `Payment method not found for paymentMethodId: ${paymentMethodId}`
+                  );
+                }
 
-              if (paymentMethodDoc.exists()) {
-                const paymentMethodData = paymentMethodDoc.data();
-                paymentMethodName = paymentMethodData.paymentMethodName; // Assume the field is 'name'
+                // Extract product names from the order items
+                const productNames = order.items
+                  .map((item) => item.title)
+                  .join("\n"); // Join names as a string
+
+                return {
+                  id: docSnapshot.id, // Use docSnapshot.id here
+                  ...order,
+                  displayName: displayName,
+                  phoneNumber: phoneNumber,
+                  paymentMethodName: paymentMethodName,
+                  productNames: productNames,
+                };
               } else {
-                console.warn(
-                  `Payment method not found for paymentMethodId: ${paymentMethodId}`
-                );
+                console.warn(`User not found for userId: ${userId}`);
+                return {
+                  id: docSnapshot.id,
+                  ...order,
+                  displayName: "Unknown User",
+                  userPhone: "No Phone",
+                  paymentMethodName: paymentMethodName, // Default value
+                  productNames: "No Products", // Default value if no user found
+                };
               }
-
-              // Extract product names from the order items
-              const productNames = order.items
-                .map((item) => item.title)
-                .join("\n"); // Join names as a string
-
-              return {
-                id: docSnapshot.id, // Use docSnapshot.id here
-                ...order,
-                displayName: displayName,
-                phoneNumber: phoneNumber,
-                paymentMethodName: paymentMethodName,
-                productNames: productNames, 
-              };
-            } else {
-              console.warn(`User not found for userId: ${userId}`);
+            } catch (error) {
+              console.error(
+                `Error fetching user or payment method data:`,
+                error
+              );
               return {
                 id: docSnapshot.id,
                 ...order,
-                displayName: "Unknown User",
-                userPhone: "No Phone",
+                displayName: "Error",
+                userPhone: "Error",
                 paymentMethodName: paymentMethodName, // Default value
-                productNames: "No Products", // Default value if no user found
+                productNames: "Error retrieving products", // Default value
               };
             }
-          } catch (error) {
-            console.error(`Error fetching user or payment method data:`, error);
-            return {
-              id: docSnapshot.id,
-              ...order,
-              displayName: "Error",
-              userPhone: "Error",
-              paymentMethodName: paymentMethodName, // Default value
-              productNames: "Error retrieving products", // Default value
-            };
-          }
-        })
-      );
+          })
+        );
 
-      setOrders(ordersData);
-      setLoading(false);
-    },
-    (error) => {
-      console.error("Error fetching real-time orders: ", error);
-      setLoading(false);
-    }
-  );
+        setOrders(ordersData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching real-time orders: ", error);
+        setLoading(false);
+      }
+    );
 
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
   const handlePress = (id) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
+  };
+
+  const handleConfirmOrder = async (orderId: string | undefined) => {
+    const shipperId = auth.currentUser?.uid;
+    if (shipperId) {
+      try {
+        const orderDocRef = doc(orderRef, orderId);
+        await updateDoc(orderDocRef, {
+          shipperId: shipperId,
+          orderStatusId: '4',
+        });
+        console.log(
+          `Order ${orderId} has been confirmed with shipper ID: ${shipperId}`
+        );
+      } catch (error) {
+        console.error("Error confirming order:", error);
+      }
+    } else {
+      console.error("No shipper is logged in.");
+    }
+    
   };
 
   const renderItem = ({ item }) => (
@@ -195,6 +225,7 @@ useEffect(() => {
       item={item}
       expanded={item.id === expandedId}
       onPress={() => handlePress(item.id)}
+      handleConfirmOrder={handleConfirmOrder}
     />
   );
 
@@ -252,7 +283,6 @@ const styles = StyleSheet.create({
     color: "black",
     flex: 1,
     overflow: "hidden", // Hide overflow
-
   },
   touch: {
     borderRadius: 10,
