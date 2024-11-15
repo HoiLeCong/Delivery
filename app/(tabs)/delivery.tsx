@@ -37,42 +37,107 @@ const ItemComponent = ({
   expanded,
   handleCancelOrder,
   handleSuccess,
+  handlePayTheShop,
   handleReturn,
 }) => {
-  const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
+   const baseHeight = 140; 
+   const maxExpandedHeight = 500;
+   const calculatedHeight = baseHeight + item.productNames.length * 30; 
 
-  // Animate item height based on expanded state
-  useEffect(() => {
-    Animated.timing(animatedHeight, {
-      toValue: expanded ? 420 : 140,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [expanded]);
+   const animatedHeight = useState(new Animated.Value(baseHeight))[0]; 
 
-  const backgroundColor =
-    item.orderStatusId === "5"
-      ? "#04CDC1"
-      : item.orderStatusId === "6"
-      ? "#04CD18"
-      : item.orderStatusId === "7"
-      ? "red"
-      : item.orderStatusId === "8"
-      ? "#CEBA08"
-      : "defaultColor";
+   useEffect(() => {
+     Animated.timing(animatedHeight, {
+       toValue: expanded
+         ? Math.min(calculatedHeight, maxExpandedHeight)
+         : baseHeight,
+       duration: 300,
+       useNativeDriver: false,
+     }).start();
+   }, [expanded, item.productNames.length]);
+
+  const getBackgroundColor = () => {
+    switch (item.orderStatusId) {
+      case "5":
+        return "#04CDC1";
+      case "6":
+        return "#04CD18";
+      case "7":
+        return "red";
+      case "8":
+        return "#CEBA08";
+      case "9":
+        return "#ff7891";
+      default:
+        return "#fff";
+    }
+  };
+  const OrderStatus = {
+    IN_TRANSIT: "5",
+    DELIVERED: "6",
+    FAILED: "7",
+    RETURNED: "8",
+  };
+  const renderStatusButtons = () => {
+    switch (item.orderStatusId) {
+      case OrderStatus.IN_TRANSIT:
+        return (
+          <>
+            <TouchableOpacity
+              style={styles.buttonCancel}
+              onPress={() => handleCancelOrder(item.id)}
+            >
+              <Text style={styles.buttonText}>Thất{"\n"}bại</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.buttonSuccess}
+              onPress={() => handleSuccess(item.id)}
+            >
+              <Text style={styles.buttonText}>Thành công</Text>
+            </TouchableOpacity>
+          </>
+        );
+      case OrderStatus.DELIVERED:
+        return (
+          <TouchableOpacity
+            style={styles.buttonPay}
+            onPress={() => handlePayTheShop(item.id)}
+          >
+            <Text style={styles.buttonText}>Trả{"\n"}tiền</Text>
+          </TouchableOpacity>
+        );
+      case OrderStatus.FAILED:
+        return (
+          <TouchableOpacity
+            style={styles.buttonReturn}
+            onPress={() => handleReturn(item.id)}
+          >
+            <Text style={styles.buttonText}>Lưu{"\n"}kho</Text>
+          </TouchableOpacity>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onPress}>
         <Animated.View
           style={[styles.itemContainer, { height: animatedHeight }]}
         >
-          <View style={[styles.itemOrderFlatList, { backgroundColor }]}>
-            {expanded && (
+          <View
+            style={[
+              styles.itemOrderFlatList,
+              { backgroundColor: getBackgroundColor() },
+            ]}
+          >
+           
               <View style={styles.itemLineOrderFlatList}>
                 <Text style={styles.title}>Mã đơn:</Text>
                 <Text style={styles.contentTitle}>{item.id}</Text>
               </View>
-            )}
+            
 
             <View style={styles.itemLineOrderFlatList}>
               <Text style={styles.title}>Người gửi:</Text>
@@ -108,13 +173,11 @@ const ItemComponent = ({
                     {item.paymentMethodName}
                   </Text>
                 </View>
-                {item.orderStatusId == 7 ? (
+                {item.orderStatusId == 7 && (
                   <View style={styles.itemLineOrderFlatList}>
                     <Text style={styles.title}>Ghi chú:</Text>
                     <Text style={styles.contentTitle}>{item.cancelReason}</Text>
                   </View>
-                ) : (
-                  ""
                 )}
                 <View style={styles.itemLineOrderFlatList}>
                   <Text
@@ -125,31 +188,14 @@ const ItemComponent = ({
                   >
                     Tổng: {item.items.length} sản phẩm.
                   </Text>
-                </View>
+                </View>    
                 <View
                   style={[
                     styles.itemLineOrderFlatList,
                     { justifyContent: "flex-end" },
                   ]}
                 >
-                  <TouchableOpacity
-                    style={styles.buttonCancel}
-                    onPress={() => handleCancelOrder(item.id)}
-                  >
-                    <Text style={styles.buttonText}>Hủy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleSuccess(item.id)}
-                    style={styles.buttonSuccess}
-                  >
-                    <Text style={styles.buttonText}>Thành công</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleReturn(item.id)}
-                    style={styles.buttonReturn}
-                  >
-                    <Text style={styles.buttonText}>Lưu{"\n"}kho</Text>
-                  </TouchableOpacity>
+                  {renderStatusButtons()}
                 </View>
               </View>
             )}
@@ -168,7 +214,7 @@ const Delivery = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const shipperId = auth.currentUser?.uid
+  const shipperId = auth.currentUser?.uid;
 
   useEffect(() => {
     const shipperId = auth.currentUser?.uid;
@@ -181,7 +227,7 @@ const Delivery = () => {
 
     const q = query(
       orderRef,
-      where("orderStatusId", "in", ["5", "6", "7", "8"]),
+      where("orderStatusId", "in", ["5", "6", "7", "8", "9"]),
       where("shipperId", "==", shipperId)
     );
 
@@ -224,7 +270,7 @@ const Delivery = () => {
 
               // Extract product names
               const productNames = order.items
-                .map((item) => item.title)
+                .map((item: { title: any; }) => item.title)
                 .join(", ");
 
               return {
@@ -300,7 +346,9 @@ const Delivery = () => {
         });
 
         const deliveryHistoryDocRef = doc(
-          deliveryHistoryRef, shipperId, "orders",
+          deliveryHistoryRef,
+          shipperId,
+          "orders",
           selectedOrderId
         );
         await setDoc(deliveryHistoryDocRef, {
@@ -322,7 +370,7 @@ const Delivery = () => {
     }
   };
 
-  const handleSuccess = async (orderId) => {
+  const handleSuccess = async (orderId: string | undefined) => {
     try {
       const orderDocRef = doc(orderRef, orderId);
       const orderSnapshot = await getDoc(orderDocRef);
@@ -345,13 +393,16 @@ const Delivery = () => {
           ...orderData,
           orderStatusId: "6",
         });
-         const deliveryHistoryDocRef = doc(
-          deliveryHistoryRef, shipperId, 'orders', orderId
-         )
-         await setDoc(deliveryHistoryDocRef, {
-           ...orderData,
-           orderStatusId: "6",
-         });
+        const deliveryHistoryDocRef = doc(
+          deliveryHistoryRef,
+          shipperId,
+          "orders",
+          orderId
+        );
+        await setDoc(deliveryHistoryDocRef, {
+          ...orderData,
+          orderStatusId: "6",
+        });
         setShowModal(true);
         setTimeout(() => {
           setShowModal(false);
@@ -365,8 +416,20 @@ const Delivery = () => {
       console.error("Error success order:", error);
     }
   };
+  const handlePayTheShop= async(orderId: string | undefined) =>{
+    
+    try {
+      const orderDocRef = doc(orderRef, orderId);
+      await updateDoc(orderDocRef, {
+        orderStatusId: "9",
+      });
+    } catch (error) {
+      console.error("Error pay the shop order:", error);
+    }
+    
+  }
 
-  const handleReturn = async (orderId) => {
+  const handleReturn = async (orderId: string | undefined) => {
     try {
       const orderDocRef = doc(orderRef, orderId);
       await updateDoc(orderDocRef, {
@@ -388,6 +451,7 @@ const Delivery = () => {
       handleCancelOrder={() => handleCancelOrderPress(item.id)}
       handleSuccess={handleSuccess}
       handleReturn={handleReturn}
+      handlePayTheShop = {handlePayTheShop}
     />
   );
 
@@ -514,10 +578,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 15,
   },
+  buttonHandOver: {
+    width: 68,
+    height: 68,
+    backgroundColor: "#04CDC1",
+    borderRadius: 34,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
   buttonReturn: {
     width: 68,
     height: 68,
     backgroundColor: "#FFD000",
+    borderRadius: 34,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonPay: {
+    width: 68,
+    height: 68,
+    backgroundColor: "#04CDC1",
     borderRadius: 34,
     justifyContent: "center",
     alignItems: "center",
