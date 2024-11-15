@@ -20,17 +20,22 @@ import {
   updateDoc,
 } from "firebase/firestore";
 const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
-  const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
+  const baseHeight = 140; // Default collapsed height
+  const maxExpandedHeight = 500; // Max expanded height
+  const calculatedHeight = baseHeight + item.productNames.length * 10; // Dynamically adjust based on productNames length
 
-  // Animate item height based on expanded state
+  const animatedHeight = useState(new Animated.Value(baseHeight))[0]; // Default collapsed height
+
+  // Animate item height based on expanded state and item length
   useEffect(() => {
     Animated.timing(animatedHeight, {
-      toValue: expanded ? 420 : 140,
+      toValue: expanded
+        ? Math.min(calculatedHeight, maxExpandedHeight)
+        : baseHeight,
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [expanded]);
-
+  }, [expanded, item.productNames.length]);
 
   return (
     <View style={styles.container}>
@@ -87,7 +92,10 @@ const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
                     Tổng: {item.items.length} sản phẩm.
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.touch} onPress={()=>handleConfirmOrder(item.id)}>
+                <TouchableOpacity
+                  style={styles.touch}
+                  onPress={() => handleConfirmOrder(item.id)}
+                >
                   <Text style={styles.textTouch}>Nhận đơn</Text>
                 </TouchableOpacity>
               </View>
@@ -145,7 +153,7 @@ const Home = () => {
 
                 // Extract product names from the order items
                 const productNames = order.items
-                  .map((item) => item.title)
+                  .map((item: { title: any; }) => item.title)
                   .join("\n"); // Join names as a string
 
                 return {
@@ -195,7 +203,7 @@ const Home = () => {
 
     return () => unsubscribe();
   }, []);
-  const handlePress = (id) => {
+  const handlePress = (id: React.SetStateAction<null>) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
 
