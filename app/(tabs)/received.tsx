@@ -26,7 +26,7 @@ const ItemComponent = ({ item, onPress, expanded, handleCancelOrder, handleConfi
   // Animate item height based on expanded state
   useEffect(() => {
     Animated.timing(animatedHeight, {
-      toValue: expanded ? 420 : 140,
+      toValue: expanded ? 500 : 140,
       duration: 300,
       useNativeDriver: false,
     }).start();
@@ -216,7 +216,7 @@ const Received = () => {
 
     return () => unsubscribe();
   }, []);
-  const handleCancelOrder = async(orderId) =>{
+  const handleCancelOrder = async(orderId: string | undefined) =>{
     const shipperId = null;
     try {
       const orderDocRef = doc(orderRef, orderId)
@@ -231,23 +231,11 @@ const Received = () => {
         console.error("Error confirming order:", error);
       }
     } 
-  
-    // const handleConfirmReceived = async(orderId) => {
-      
-    //   try {
-    //     const orderDocRef = doc(orderRef, orderId);
-    //     await updateDoc(orderDocRef, {
-    //       orderStatusId :'5'
-    //     })
-    //   } catch (error) {
-    //     console.log('Error order', error.message)
-    //   }
-    // }
-    const handleConfirmReceived = async (orderId) => {
+    const handleConfirmReceived = async (orderId: string | undefined) => {
       try {
-        const userId = auth.currentUser?.uid;
+        const shipperId = auth.currentUser?.uid;
 
-        if (!userId) {
+        if (!shipperId) {
           console.error("User not authenticated");
           return;
         }
@@ -258,7 +246,7 @@ const Received = () => {
         });
 
         const deliveryHistoryDocRef = doc(
-          collection(deliveryHistoryRef, userId, "orders"),
+          collection(deliveryHistoryRef, shipperId, "orders"),
           orderId
         );
         const orderSnapshot = await getDoc(orderDocRef);
@@ -279,7 +267,7 @@ const Received = () => {
     };
 
 
-  const handlePress = (id) => {
+  const handlePress = (id: React.SetStateAction<null>) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
 
