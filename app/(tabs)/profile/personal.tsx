@@ -49,7 +49,7 @@ const PersonalDetailsScreen = () => {
           if (userDocSnap.exists()) {
             setDeliveryPerson({
               avatar: userDocSnap.data().avatar || null,
-              fullName: userDocSnap.data().fullName || "",
+              fullName: userDocSnap.data().fullName || null,
               email: userDocSnap.data().email || "",
               phoneNumber: userDocSnap.data().phoneNumber || "",
               CIN: userDocSnap.data().CIN || "",
@@ -79,6 +79,7 @@ const PersonalDetailsScreen = () => {
 
         // Cập nhật email và số điện thoại
         await updateDoc(userDocRef, {
+          fullName: deliveryPerson.fullName,
           email: deliveryPerson.email,
           phoneNumber: deliveryPerson.phoneNumber,
         });
@@ -121,9 +122,9 @@ const PersonalDetailsScreen = () => {
           style={styles.input}
           value={deliveryPerson.fullName}
           onChangeText={(text) =>
-            setDeliveryPerson({ ...deliveryPerson, email: text })
+            setDeliveryPerson({ ...deliveryPerson, fullName: text })
           }
-          placeholder="Địa chỉ email"
+          placeholder="Họ và tên"
           keyboardType="email-address"
           editable={editing}
         />
