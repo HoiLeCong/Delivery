@@ -18,4 +18,8 @@ web-build/
 
 expo-env.d.ts
 # @end expo-cli
+<<<<<<< HEAD
 shopping-app-3-serviceaccount-firebase.json
+=======
+shopping-app-3-serviceaccount-firebase.json
+>>>>>>> 318e737 (ignore service account)
