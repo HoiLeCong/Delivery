@@ -161,7 +161,7 @@ const PersonalDetailsScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-      <View style={styles.avatarContainer}>
+      {/* <View style={styles.avatarContainer}>
         <Image
           source={{ uri: deliveryPerson.avatar || 'https://gamek.mediacdn.vn/133514250583805952/2022/5/18/photo-1-16528608926331302726659.jpg' }}
           style={styles.avatar}
@@ -169,7 +169,17 @@ const PersonalDetailsScreen = () => {
         <TouchableOpacity style={styles.editIconContainer} onPress={handleAvatarChange}>
           <Text style={styles.editIcon}>✏️</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
+      <View style={styles.avatarContainer}>
+          <Image
+            source={deliveryPerson.avatar ? { uri: deliveryPerson.avatar } : require("../../../assets/images/imgAvatar.jpg")}
+            style={styles.avatar}
+          />
+
+          <TouchableOpacity style={styles.editIconContainer} onPress={handleAvatarChange}>
+            <Text style={styles.editIcon}>✏️</Text>
+          </TouchableOpacity>
+        </View>
         {/* Personal Details Section */}
         <Text style={styles.heading}>Personal Details</Text>
 
