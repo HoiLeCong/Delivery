@@ -1,25 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { updateEmail } from "firebase/auth"; // Import hàm updateEmail
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { updateEmail } from 'firebase/auth'; // Import hàm updateEmail
+import { ScrollView } from 'react-native-gesture-handler';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const PersonalDetailsScreen = () => {
   const [deliveryPerson, setDeliveryPerson] = useState({
@@ -68,7 +55,82 @@ const PersonalDetailsScreen = () => {
 
     fetchDeliveryPersonData();
   }, []);
-
+    // Hàm thay đổi ảnh đại diện
+    const handleAvatarChange = async () => {
+      const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
+      if (!result.didCancel && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        const imageUri = selectedImage.uri;
+        const filename = selectedImage.fileName || `avatar_${Date.now()}.jpg`;
+  
+        // Tạo tham chiếu đến Firebase Storage
+        const storage = getStorage();
+        const storageRef = ref(storage, 'avatars/' + filename);
+  
+        // Upload ảnh lên Firebase Storage
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        await uploadBytes(storageRef, blob);
+  
+        // Lấy URL của ảnh đã tải lên
+        const downloadURL = await getDownloadURL(storageRef);
+  
+        // Cập nhật state với URL ảnh mới
+        setDeliveryPerson({ ...deliveryPerson, avatar: downloadURL });
+  
+        // Cập nhật Firestore với URL ảnh mới
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+          const db = getFirestore();
+          const userDocRef = doc(db, "shippers", user.uid);
+          await updateDoc(userDocRef, { avatar: downloadURL });
+        }
+  
+        Alert.alert("Thành công", "Ảnh đại diện đã được cập nhật!");
+      }
+    };
+    // const handleChoosePhoto = async () => {
+    //   try {
+    //     const user = auth().currentUser;
+    //     if (!user) {
+    //       throw new Error('Người dùng chưa đăng nhập');
+    //     }
+    
+    //     // Mở thư viện ảnh
+    //     const result = await launchImageLibrary({
+    //       mediaType: 'photo',  // hoặc 'video'
+    //       quality: 1,
+    //     });
+    
+    //     if (!result.didCancel && result.assets?.[0]) {
+    //       const source = result.assets[0].uri;
+    //       console.log('URI ảnh:', source);
+    
+    //       if (source) {
+    //         const reference = storage().ref(`avatars/${user.uid}.jpg`);
+    //         await reference.putFile(source);
+    
+    //         const url = await reference.getDownloadURL();
+    //         console.log('URL ảnh: ', url);
+    
+    //         setDeliveryPerson((prevState) => ({
+    //           ...prevState,
+    //           avatar: url,
+    //         }));
+    
+    //         const userDocRef = firestore().collection('users').doc(user.uid);
+    //         await userDocRef.update({ avatar: url });
+    //       } else {
+    //         Alert.alert('Lỗi', 'Không có ảnh nào được chọn.');
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error('Lỗi khi tải ảnh lên:', error);
+    //     Alert.alert('Lỗi', 'Không thể tải ảnh lên Firebase.');
+    //   }
+    // };
+    
   const handleSave = async () => {
     try {
       const auth = getAuth();
@@ -100,17 +162,22 @@ const PersonalDetailsScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View style={styles.avatarContainer}>
+      {/* <View style={styles.avatarContainer}>
+        <Image
+          source={{ uri: deliveryPerson.avatar || 'https://gamek.mediacdn.vn/133514250583805952/2022/5/18/photo-1-16528608926331302726659.jpg' }}
+          style={styles.avatar}
+        />
+        <TouchableOpacity style={styles.editIconContainer} onPress={handleAvatarChange}>
+          <Text style={styles.editIcon}>✏️</Text>
+        </TouchableOpacity>
+      </View> */}
+      <View style={styles.avatarContainer}>
           <Image
-            source={
-              deliveryPerson.avatar
-                ? { uri: deliveryPerson.avatar }
-                : require("../../../assets/images/imgAvatar.jpg")
-            }
+            source={deliveryPerson.avatar ? { uri: deliveryPerson.avatar } : require("../../../assets/images/imgAvatar.jpg")}
             style={styles.avatar}
           />
 
-          <TouchableOpacity style={styles.editIconContainer}>
+          <TouchableOpacity style={styles.editIconContainer} onPress={handleAvatarChange}>
             <Text style={styles.editIcon}>✏️</Text>
           </TouchableOpacity>
         </View>
@@ -262,4 +329,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PersonalDetailsScreen;
+
+export default PersonalDetailsScreen
