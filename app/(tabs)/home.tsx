@@ -19,6 +19,7 @@ import {
   collection,
   updateDoc,
 } from "firebase/firestore";
+
 const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
   const animatedHeight = useState(new Animated.Value(140))[0];
   useEffect(() => {
