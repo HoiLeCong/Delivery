@@ -33,7 +33,7 @@ const PersonalDetailsScreen = () => {
     avatar: string | null;  // Chỉnh sửa để avatar có thể là string hoặc null
     frontCard: string;
     backCard: string;
-}>({
+  }>({
     fullName: "",
     email: "",
     phoneNumber: "",
@@ -42,10 +42,10 @@ const PersonalDetailsScreen = () => {
     avatar: null, // Ban đầu avatar là null
     frontCard: "",
     backCard: "",
-});
-const auth = getAuth();
-const storage = getStorage();
-const firestore = getFirestore();
+  });
+  const auth = getAuth();
+  const storage = getStorage();
+  const firestore = getFirestore();
 
 
   const [editing, setEditing] = useState(false);
@@ -84,7 +84,7 @@ const firestore = getFirestore();
 
     fetchDeliveryPersonData();
   }, []);
-    // Hàm yêu cầu quyền và chọn ảnh
+  // Hàm yêu cầu quyền và chọn ảnh
   // const handleAvatarChange = async () => {
   //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   //   if (status !== 'granted') {
@@ -109,13 +109,13 @@ const firestore = getFirestore();
       Alert.alert('Quyền truy cập bị từ chối', 'Cần quyền truy cập thư viện ảnh để thay đổi ảnh đại diện');
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // Sử dụng enum thay vì số
       allowsEditing: true,
       quality: 1,
     });
-  
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const source = result.assets[0].uri;
       uploadAvatar(source);
@@ -129,70 +129,70 @@ const firestore = getFirestore();
       if (!user) {
         throw new Error('Người dùng chưa đăng nhập');
       }
-  
+
       const response = await fetch(uri);
       const blob = await response.blob();
       const reference = ref(storage, `avatars/${user.uid}.jpg`);
       await uploadBytes(reference, blob);
-  
+
       const url = await getDownloadURL(reference);
       setDeliveryPerson((prevState) => ({
         ...prevState,
         avatar: url,
       }));
-  
+
       const userDocRef = doc(firestore, 'shippers', user.uid);
       await updateDoc(userDocRef, { avatar: url });
-  
+
       Alert.alert('Thành công', 'Ảnh đại diện đã được cập nhật!');
     } catch (error) {
       console.error('Lỗi khi tải ảnh lên:', error);
       Alert.alert('Lỗi', 'Không thể tải ảnh lên Firebase.');
     }
   };
-  
-  
-    // const handleAvatarChange = async () => {
-    //   try {
-    //     const user = auth().currentUser;
-    //     if (!user) {
-    //       throw new Error('Người dùng chưa đăng nhập');
-    //     }
-    
-    //     // Mở thư viện ảnh
-    //     const result = await launchImageLibrary({
-    //       mediaType: 'photo',  // hoặc 'video'
-    //       quality: 1,
-    //     });
-    
-    //     if (!result.didCancel && result.assets?.[0]) {
-    //       const source = result.assets[0].uri;
-    //       console.log('URI ảnh:', source);
-    
-    //       if (source) {
-    //         const reference = storage().ref(`avatars/${user.uid}.jpg`);
-    //         await reference.putFile(source);
-    
-    //         const url = await reference.getDownloadURL();
-    //         console.log('URL ảnh: ', url);
-    
-    //         setDeliveryPerson((prevState) => ({
-    //           ...prevState,
-    //           avatar: url,
-    //         }));
-    
-    //         const userDocRef = firestore().collection('shippers').doc(user.uid);
-    //         await userDocRef.update({ avatar: url });
-    //       } else {
-    //         Alert.alert('Lỗi', 'Không có ảnh nào được chọn.');
-    //       }
-    //     }
-    //   } catch (error) {
-    //     console.error('Lỗi khi tải ảnh lên:', error);
-    //     Alert.alert('Lỗi', 'Không thể tải ảnh lên Firebase.');
-    //   }
-    // };
-    
+
+
+  // const handleAvatarChange = async () => {
+  //   try {
+  //     const user = auth().currentUser;
+  //     if (!user) {
+  //       throw new Error('Người dùng chưa đăng nhập');
+  //     }
+
+  //     // Mở thư viện ảnh
+  //     const result = await launchImageLibrary({
+  //       mediaType: 'photo',  // hoặc 'video'
+  //       quality: 1,
+  //     });
+
+  //     if (!result.didCancel && result.assets?.[0]) {
+  //       const source = result.assets[0].uri;
+  //       console.log('URI ảnh:', source);
+
+  //       if (source) {
+  //         const reference = storage().ref(`avatars/${user.uid}.jpg`);
+  //         await reference.putFile(source);
+
+  //         const url = await reference.getDownloadURL();
+  //         console.log('URL ảnh: ', url);
+
+  //         setDeliveryPerson((prevState) => ({
+  //           ...prevState,
+  //           avatar: url,
+  //         }));
+
+  //         const userDocRef = firestore().collection('shippers').doc(user.uid);
+  //         await userDocRef.update({ avatar: url });
+  //       } else {
+  //         Alert.alert('Lỗi', 'Không có ảnh nào được chọn.');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Lỗi khi tải ảnh lên:', error);
+  //     Alert.alert('Lỗi', 'Không thể tải ảnh lên Firebase.');
+  //   }
+  // };
+
   const handleSave = async () => {
     try {
       const auth = getAuth();
@@ -221,10 +221,68 @@ const firestore = getFirestore();
       Alert.alert("Lỗi", "Không thể cập nhật thông tin.");
     }
   };
+  const handleFrontCardChange = async () => {
+    await handleImageChange("frontCard");
+  };
+
+  const handleBackCardChange = async () => {
+    await handleImageChange("backCard");
+  };
+
+  const handleImageChange = async (type: "frontCard" | "backCard") => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Quyền truy cập bị từ chối", "Cần quyền truy cập thư viện ảnh để thay đổi ảnh.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+
+        // Upload ảnh lên Firebase Storage
+        const user = auth.currentUser;
+        if (!user) {
+          throw new Error("Người dùng chưa đăng nhập");
+        }
+
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const reference = ref(storage, `cccd/${user.uid}_${type}.jpg`);
+        await uploadBytes(reference, blob);
+
+        const url = await getDownloadURL(reference);
+
+        // Cập nhật trạng thái
+        setDeliveryPerson((prevState) => ({
+          ...prevState,
+          [type]: url,
+        }));
+
+        // Lưu URL vào Firestore
+        const userDocRef = doc(firestore, "shippers", user.uid);
+        const updateData: any = {};
+        updateData[type] = url;
+        await updateDoc(userDocRef, updateData);
+
+        Alert.alert("Thành công", `Ảnh ${type === "frontCard" ? "mặt trước" : "mặt sau"} đã được cập nhật!`);
+      }
+    } catch (error) {
+      console.error(`Lỗi khi tải ảnh ${type}:`, error);
+      Alert.alert("Lỗi", "Không thể tải ảnh lên Firebase.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView>
-      {/* <View style={styles.avatarContainer}>
+        {/* <View style={styles.avatarContainer}>
           <Image
             source={deliveryPerson.avatar ? { uri: deliveryPerson.avatar } : require("../../../assets/images/imgAvatar.jpg")}
             style={styles.avatar}
@@ -234,7 +292,7 @@ const firestore = getFirestore();
             <Text style={styles.editIcon}>✏️</Text>
           </TouchableOpacity>
         </View> */}
-         <View style={styles.avatarContainer}>
+        <View style={styles.avatarContainer}>
           <Image
             source={deliveryPerson.avatar ? { uri: deliveryPerson.avatar } : require("../../../assets/images/imgAvatar.jpg")}
             style={styles.avatar}
@@ -284,7 +342,7 @@ const firestore = getFirestore();
         <Text style={styles.input}>{deliveryPerson.CIN}</Text>
         <Text style={styles.label}>Ngày cấp</Text>
         <Text style={styles.input}>{deliveryPerson.DateOfIssuance}</Text>
-        <Text style={styles.label}>Mặt trước căn cước công dân</Text>
+        {/* <Text style={styles.label}>Mặt trước căn cước công dân</Text>
         <Image
           source={
             deliveryPerson.frontCard
@@ -301,7 +359,31 @@ const firestore = getFirestore();
               : require("../../../assets/images/imgAvatar.jpg")
           }
           style={{ width: "100%", height: 200 }}
-        />
+        /> */}
+        <Text style={styles.label}>Mặt trước căn cước công dân</Text>
+        <TouchableOpacity onPress={handleFrontCardChange}>
+          <Image
+            source={
+              deliveryPerson.frontCard
+                ? { uri: deliveryPerson.frontCard }
+                : require("../../../assets/images/imgAvatar.jpg")
+            }
+            style={{ width: "100%", height: 200 }}
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.label}>Mặt sau căn cước công dân</Text>
+        <TouchableOpacity onPress={handleBackCardChange}>
+          <Image
+            source={
+              deliveryPerson.backCard
+                ? { uri: deliveryPerson.backCard }
+                : require("../../../assets/images/imgAvatar.jpg")
+            }
+            style={{ width: "100%", height: 200 }}
+          />
+        </TouchableOpacity>
+
       </ScrollView>
 
       {/* Nút Chỉnh sửa/Lưu */}
