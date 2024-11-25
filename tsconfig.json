@@ -6,8 +6,13 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "typeRoots": [
+    "./node_modules/@types",
+    "./node_modules/expo-image-picker/build"
+  ]
   },
+  
   "include": [
     "**/*.ts",
     "**/*.tsx",

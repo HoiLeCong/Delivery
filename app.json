@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true
     },
+    "platforms": ["ios", "android"],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -25,7 +26,14 @@
         "googleMaps": {
           "apiKey": "AIzaSyDN11gw5inTTlNlaiZRgjocqS7na3ChweA"
         }
-      }
+      },
+      "permissions": [
+       
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "CAMERA_ROLL"
+      ]
     },
     "web": {
       "bundler": "metro",
