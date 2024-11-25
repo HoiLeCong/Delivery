@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { auth, db, orderRef } from "@/src/firebase/firebaseConfig";
 import {
   query,
@@ -20,22 +20,14 @@ import {
   updateDoc,
 } from "firebase/firestore";
 const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
-  const baseHeight = 140; // Default collapsed height
-  const maxExpandedHeight = 500; // Max expanded height
-  const calculatedHeight = baseHeight + item.productNames.length * 10; // Dynamically adjust based on productNames length
-
-  const animatedHeight = useState(new Animated.Value(baseHeight))[0]; // Default collapsed height
-
-  // Animate item height based on expanded state and item length
+  const animatedHeight = useState(new Animated.Value(140))[0];
   useEffect(() => {
     Animated.timing(animatedHeight, {
-      toValue: expanded
-        ? Math.min(calculatedHeight, maxExpandedHeight)
-        : baseHeight,
+      toValue: expanded ? 450 : 140,
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [expanded, item.productNames.length]);
+  }, [expanded]); 
 
   return (
     <View style={styles.container}>

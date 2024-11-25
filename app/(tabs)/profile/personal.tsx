@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
+import React ,{ useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Alert, Platform, ScrollView } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { updateEmail } from 'firebase/auth'; // Import hàm updateEmail
-import { ScrollView } from 'react-native-gesture-handler';
-import { launchImageLibrary } from 'react-native-image-picker';
+// import { launchImageLibrary } from 'react-native-image-picker';
 
 const PersonalDetailsScreen = () => {
   const [deliveryPerson, setDeliveryPerson] = useState({
