@@ -47,8 +47,7 @@ const LoginScreen = () => {
         router.push("/(tabs)/home");
       }
     } catch (error) {
-      console.error("Error logging in:", error);
-      Alert.alert("Login Error", error.message);
+      Alert.alert("Login Error", 'Vui lòng kiểm tra lại thông tin');
     } finally {
       setIsLoading(false);
     }
@@ -134,9 +133,6 @@ const LoginScreen = () => {
             <Text style={styles.textTouch}>Login</Text>
           )}
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.touch} onPress={handleLogin}> 
-          <Text style={styles.textTouch}>Login</Text>
-        </TouchableOpacity> */}
       </ScrollView>
     </View>
   );

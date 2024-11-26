@@ -217,8 +217,6 @@ const Delivery = () => {
   const shipperId = auth.currentUser?.uid;
 
   useEffect(() => {
-    const shipperId = auth.currentUser?.uid;
-
     if (!shipperId) {
       console.warn("No authenticated user found.");
       setLoading(false);

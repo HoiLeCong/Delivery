@@ -4,17 +4,13 @@ import { Link, router } from 'expo-router'
 import { AntDesign, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { getAuth, signOut } from 'firebase/auth'; // Import Firebase Authentication
 
-
-
-
 const ProfileScreen = () => {
   const handleLogout = async () => {
     try {
       const auth = getAuth();
       await signOut(auth);
       
-      // Chuyển hướng đến màn hình đăng nhập sau khi đăng xuất
-      router.replace('/'); // Thay thế '/' bằng đường dẫn đến màn hình đăng nhập 
+      router.replace('/'); 
     } catch (error) {
       console.error('Lỗi khi đăng xuất:', error);
       Alert.alert('Lỗi', 'Không thể đăng xuất.');

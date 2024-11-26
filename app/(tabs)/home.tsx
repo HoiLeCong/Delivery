@@ -117,7 +117,6 @@ const Home = () => {
     const unsubscribe = onSnapshot(
       q,
       async (snapshot) => {
-        console.log("Orders snapshot received:", snapshot.size); // Log snapshot size
         const ordersData = await Promise.all(
           snapshot.docs.map(async (docSnapshot) => {
             const order = docSnapshot.data(); // Use docSnapshot to get data
