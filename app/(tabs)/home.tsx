@@ -19,6 +19,8 @@ import {
   collection,
   updateDoc,
 } from "firebase/firestore";
+import axios from 'axios'
+const API_BASE_URL = 'http://192.168.1.204:3001';
 
 const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
   const animatedHeight = useState(new Animated.Value(140))[0];
@@ -199,7 +201,7 @@ const Home = () => {
   const handlePress = (id: React.SetStateAction<null>) => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
-
+//nhan don
   const handleConfirmOrder = async (orderId: string | undefined) => {
     const shipperId = auth.currentUser?.uid;
     if (shipperId) {
@@ -220,6 +222,9 @@ const Home = () => {
     }
     
   };
+//nhan don
+
+
 
   const renderItem = ({ item }) => (
     <ItemComponent

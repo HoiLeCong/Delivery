@@ -30,16 +30,50 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
+import axios from "axios";
+const API_BASE_URL = "http://192.168.1.204:3001";
+type ItemComponentProps = {
+  item: any;
+  onPress: () => void;
+  expanded: boolean;
+  handlePayTheShop: (orderId: string) => void;
+  handleReturn: (orderId: string) => void;
+  handleActionsSucceedAndNotification: {
+    handleSucceed: (orderId: string) => Promise<void>;
+    updateOrderStatusSuccess: (orderId: string) => Promise<void>;
+  };
+  handleActionsCancelAndNotification: {
+    updateOrderStatusFail: (orderId: string) => Promise<void>;
+    handleCancelOrderConfirm: (orderId: string) => Promise<void>;
+    handleCancelOrderPress: (orderId: string) => void;
+  };
+};
 
 const ItemComponent = ({
   item,
   onPress,
   expanded,
-  handleCancelOrder,
-  handleSuccess,
   handlePayTheShop,
   handleReturn,
-}) => {
+  handleActionsSucceedAndNotification,
+  handleActionsCancelAndNotification,
+}: any) => {
+  const { handleSucceed, updateOrderStatusSuccess } =
+    handleActionsSucceedAndNotification;
+  const orderSucceedAndSendStatus = async () => {
+    await handleSucceed(item.id);
+    await updateOrderStatusSuccess(item.id);
+  };
+  const {
+    updateOrderStatusFail,
+    handleCancelOrderConfirm,
+    handleCancelOrderPress,
+  } = handleActionsCancelAndNotification;
+  const orderFailAndSendStatusFail = async () => {
+    await handleCancelOrderPress(item.id);
+    await handleCancelOrderConfirm(item.id);
+    await updateOrderStatusFail(item.id);
+  };
    const baseHeight = 140; 
    const maxExpandedHeight = 500;
    const calculatedHeight = baseHeight + item.productNames.length * 30; 
@@ -85,13 +119,19 @@ const ItemComponent = ({
           <>
             <TouchableOpacity
               style={styles.buttonCancel}
-              onPress={() => handleCancelOrder(item.id)}
+              //@ts-ignore
+              //nút nhấn thất bại
+              onPress={() => orderFailAndSendStatusFail(item.id)}
+              //nút nhấn thất bại
             >
               <Text style={styles.buttonText}>Thất{"\n"}bại</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.buttonSuccess}
-              onPress={() => handleSuccess(item.id)}
+              //nút nhấn thành công
+              //@ts-ignore
+              onPress={() => orderSucceedAndSendStatus(item.id)}
+              //nút nhấn thành công
             >
               <Text style={styles.buttonText}>Thành công</Text>
             </TouchableOpacity>
@@ -132,13 +172,11 @@ const ItemComponent = ({
               { backgroundColor: getBackgroundColor() },
             ]}
           >
-           
               <View style={styles.itemLineOrderFlatList}>
                 <Text style={styles.title}>Mã đơn:</Text>
                 <Text style={styles.contentTitle}>{item.id}</Text>
               </View>
             
-
             <View style={styles.itemLineOrderFlatList}>
               <Text style={styles.title}>Người gửi:</Text>
               <Text style={styles.contentTitle}>Fashion Shop</Text>
@@ -270,7 +308,7 @@ const Delivery = () => {
 
               // Extract product names
               const productNames = order.items
-                .map((item: { title: any; }) => item.title)
+                .map((item: { title: any }) => item.title)
                 .join(", ");
 
               return {
@@ -310,6 +348,10 @@ const Delivery = () => {
     return () => unsubscribe();
   }, []);
 
+  /**
+   * Ham huy don do giao hàng thất bại
+   * @param orderId
+   */
   const handleCancelOrderPress = (orderId: React.SetStateAction<null>) => {
     setSelectedOrderId(orderId);
     setCancelModalVisible(true);
@@ -356,7 +398,10 @@ const Delivery = () => {
           orderStatusId: "7",
           cancelReason: cancelReason,
         });
-
+  // Gọi API thông báo trạng thái đơn hàng
+          //@ts-ignore
+          await updateOrderStatusFail(orderId, shipperId, "Giao thất bại", "nd");
+          console.log(updateOrderStatusFail)
         console.log(
           `Order ${selectedOrderId} has been canceled and moved to orderHistory.`
         );
@@ -369,8 +414,79 @@ const Delivery = () => {
       console.error("Error cancelling order:", error);
     }
   };
+  //ham huy don hang
 
-  const handleSuccess = async (orderId: string | undefined) => {
+  /**
+   * //goi api thong bao tinh trang don hang giao that bai
+   * @param orderId
+   * @param shipperId
+   * @param status
+   */
+  //@ts-ignore
+  // Define the updateOrderStatusFail function
+const updateOrderStatusFail = async (orderId: string) => {
+  try {
+    // Send failure status to the backend or process it accordingly
+    const response = await axios.post(`${API_BASE_URL}/orders/update-status`, {
+      orderId,
+      status: "Failed",  // Example failure status
+    });
+
+    if (response.data.success) {
+      console.log(`Order ${orderId} status updated to Failed.`);
+    } else {
+      console.error("Error from server:", response.data.message);
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
+  }
+};
+
+  
+  //goi api thong bao tinh trang don hangr
+  /**
+   * //goi api thong bao tinh trang don hang
+   * @param orderId
+   * @param shipperId
+   * @param status
+   */
+  //@ts-ignore
+  const updateOrderStatusSuccess = async (orderId, shipperId, status, reason = "") => {
+    console.log("orderId:", orderId);
+  console.log("shipperId:", shipperId);
+  console.log("status:", status);
+    if (!shipperId || !status) {
+      console.error("Missing shipperId or status.");
+      return;  // Prevent sending the request if the required fields are missing
+    }
+  
+    // Khởi tạo payload cơ bản với orderId, shipperId và status
+    const payload = { orderId, shipperId, status, reason };
+    console.log("Payload being sent:", payload);  // Log payload for debugging
+  
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/orders/shipper-assigned`,
+        payload
+      );
+  
+      if (response.data.success) {
+        console.log("Order status updated successfully");
+      } else {
+        console.error("Error from server:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    }
+  };
+  
+  //goi api thong bao tinh trang don hang that bai
+
+  /**
+   * //ham xu li shipper giao hang thanh cong cho client
+   * @param orderId
+   */
+  const handleSucceed = async (orderId: string | undefined) => {
     try {
       const orderDocRef = doc(orderRef, orderId);
       const orderSnapshot = await getDoc(orderDocRef);
@@ -393,6 +509,8 @@ const Delivery = () => {
           ...orderData,
           orderStatusId: "6",
         });
+       
+        //@ts-ignore
         const deliveryHistoryDocRef = doc(
           deliveryHistoryRef,
           shipperId,
@@ -407,7 +525,16 @@ const Delivery = () => {
         setTimeout(() => {
           setShowModal(false);
         }, 3000);
-
+ // Gọi API thông báo trạng thái đơn hàng
+        //@ts-ignore
+        await updateOrderStatusSuccess(
+          orderId,
+          shipperId,
+          "Giao hàng thành công",
+          "nfd"
+         
+        );
+        console.log(updateOrderStatusSuccess);
         console.log("Order updated and moved to orderHistory as delivered.");
       } else {
         console.log("Order not found.");
@@ -416,8 +543,13 @@ const Delivery = () => {
       console.error("Error success order:", error);
     }
   };
-  const handlePayTheShop= async(orderId: string | undefined) =>{
+  //ham xu li khi shipper giao hang thanh cong choo client
     
+  /**
+   * hàm trả tiền cho shop (admin)
+   * @param orderId
+   */
+  const handlePayTheShop = async (orderId: string | undefined) => {
     try {
       const orderDocRef = doc(orderRef, orderId);
       await updateDoc(orderDocRef, {
@@ -426,9 +558,12 @@ const Delivery = () => {
     } catch (error) {
       console.error("Error pay the shop order:", error);
     }
-    
-  }
+  };
 
+  /**
+   * Hàm trả hàng lại kho
+   * @param orderId
+   */
   const handleReturn = async (orderId: string | undefined) => {
     try {
       const orderDocRef = doc(orderRef, orderId);
@@ -443,18 +578,28 @@ const Delivery = () => {
     setExpandedId(id === expandedId ? null : id); // Toggle expand/collapse
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: any) => (
     <ItemComponent
       item={item}
       expanded={item.id === expandedId}
       onPress={() => handlePress(item.id)}
-      handleCancelOrder={() => handleCancelOrderPress(item.id)}
-      handleSuccess={handleSuccess}
+      handleActionsSucceedAndNotification={{
+        handleSucceed,
+        updateOrderStatusSuccess,
+      }}
+      handleActionsCancelAndNotification={{
+        updateOrderStatusFail,
+        handleCancelOrderConfirm,
+        handleCancelOrderPress,
+      }}
       handleReturn={handleReturn}
-      handlePayTheShop = {handlePayTheShop}
+      handlePayTheShop={handlePayTheShop}
     />
   );
 
+  /**
+   * Xử lí lý do hủy hàng
+   */
   return (
     <View style={styles.container}>
       {loading ? (
@@ -521,6 +666,9 @@ const Delivery = () => {
       </Modal>
     </View>
   );
+  /**
+   * Xử lí lý do hủy hàng
+   */
 };
 
 export default Delivery;

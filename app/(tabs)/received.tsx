@@ -20,7 +20,15 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
-const ItemComponent = ({ item, onPress, expanded, handleCancelOrder, handleConfirmReceived }) => {
+import axios from 'axios'
+const API_BASE_URL = 'http://192.168.1.204:3001';
+
+const ItemComponent = ({ item, onPress, expanded, handleCancelOrder, handleActionsReceviedAndNotification  }:any) => {
+  const { handleConfirmReceived, updateOrderStatus } = handleActionsReceviedAndNotification;
+  const confirmReceivedAndSendStatus = async () => {
+    await handleConfirmReceived(item.id);
+    await updateOrderStatus(item.id);
+  };
   const animatedHeight = useState(new Animated.Value(140))[0]; // Default collapsed height
 
   // Animate item height based on expanded state
@@ -100,7 +108,9 @@ const ItemComponent = ({ item, onPress, expanded, handleCancelOrder, handleConfi
                     <Text style={styles.textTouch}>Hủy</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                  onPress={()=> handleConfirmReceived(item.id)}
+                  onPress={()=> confirmReceivedAndSendStatus
+                    //@ts-ignore
+                    (item.id)}
                     style={[
                       styles.touch,
                       { marginLeft: 10, backgroundColor: "green" },
@@ -204,7 +214,7 @@ const Received = () => {
             }
           })
         );
-
+//@ts-ignore
         setOrders(ordersData);
         setLoading(false);
       },
@@ -231,6 +241,41 @@ const Received = () => {
         console.error("Error confirming order:", error);
       }
     } 
+    //goi api thong bao tinh trang don hang
+    //@ts-ignore
+    const updateOrderStatus = async (orderId, shipperId, status,reason = "") => {
+    
+        const payload = { orderId, shipperId, status };
+        if (reason) {
+          payload.reason = reason;
+        }
+        console.log("Payload gửi đi:", payload);
+    
+        const response = await axios.post(
+          `${API_BASE_URL}/orders/shipper-assigned`,
+          payload,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+    
+        if (response.data.success) {
+          
+        } else {
+         
+          console.log(response.data.message)
+        }
+      
+       
+      
+    };
+    
+
+//goi api thong bao tinh trang don hang
+
+    //shipper xac nhan nhan hang va thong bao den client "don hang dang van chuyen"
     const handleConfirmReceived = async (orderId: string | undefined) => {
       try {
         const shipperId = auth.currentUser?.uid;
@@ -258,6 +303,10 @@ const Received = () => {
             orderStatusId: "5",
             confirmedAt: new Date(), 
           });
+          // Gọi API thông báo trạng thái đơn hàng
+          //@ts-ignore
+      await updateOrderStatus(orderId, shipperId, "Đang vận chuyển", "nd");
+      console.log(updateOrderStatus)
         } else {
           console.log("Order not found");
         }
@@ -265,6 +314,7 @@ const Received = () => {
         console.log("Error in order handling:", error.message);
       }
     };
+//shipper xac nhan nhan hang va thong bao den client "don hang dang van chuyen"
 
 
   const handlePress = (id: React.SetStateAction<null>) => {
@@ -277,7 +327,10 @@ const Received = () => {
       expanded={item.id === expandedId}
       onPress={() => handlePress(item.id)}
       handleCancelOrder = {handleCancelOrder}
-      handleConfirmReceived = {handleConfirmReceived}
+
+handleActionsReceviedAndNotification = {{handleConfirmReceived,
+  updateOrderStatus}
+}
     />
   );
 
