@@ -74,21 +74,21 @@ const ItemComponent = ({
     await handleCancelOrderConfirm(item.id);
     await updateOrderStatusFail(item.id);
   };
-   const baseHeight = 140; 
-   const maxExpandedHeight = 500;
-   const calculatedHeight = baseHeight + item.productNames.length * 30; 
+  const baseHeight = 140;
+  const maxExpandedHeight = 500;
+  const calculatedHeight = baseHeight + item.productNames.length * 30;
 
-   const animatedHeight = useState(new Animated.Value(baseHeight))[0]; 
+  const animatedHeight = useState(new Animated.Value(baseHeight))[0];
 
-   useEffect(() => {
-     Animated.timing(animatedHeight, {
-       toValue: expanded
-         ? Math.min(calculatedHeight, maxExpandedHeight)
-         : baseHeight,
-       duration: 300,
-       useNativeDriver: false,
-     }).start();
-   }, [expanded, item.productNames.length]);
+  useEffect(() => {
+    Animated.timing(animatedHeight, {
+      toValue: expanded
+        ? Math.min(calculatedHeight, maxExpandedHeight)
+        : baseHeight,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [expanded, item.productNames.length]);
 
   const getBackgroundColor = () => {
     switch (item.orderStatusId) {
@@ -172,11 +172,11 @@ const ItemComponent = ({
               { backgroundColor: getBackgroundColor() },
             ]}
           >
-              <View style={styles.itemLineOrderFlatList}>
-                <Text style={styles.title}>Mã đơn:</Text>
-                <Text style={styles.contentTitle}>{item.id}</Text>
-              </View>
-            
+            <View style={styles.itemLineOrderFlatList}>
+              <Text style={styles.title}>Mã đơn:</Text>
+              <Text style={styles.contentTitle}>{item.id}</Text>
+            </View>
+
             <View style={styles.itemLineOrderFlatList}>
               <Text style={styles.title}>Người gửi:</Text>
               <Text style={styles.contentTitle}>Fashion Shop</Text>
@@ -226,7 +226,7 @@ const ItemComponent = ({
                   >
                     Tổng: {item.items.length} sản phẩm.
                   </Text>
-                </View>    
+                </View>
                 <View
                   style={[
                     styles.itemLineOrderFlatList,
@@ -544,7 +544,7 @@ const updateOrderStatusFail = async (orderId: string) => {
     }
   };
   //ham xu li khi shipper giao hang thanh cong choo client
-    
+
   /**
    * hàm trả tiền cho shop (admin)
    * @param orderId
