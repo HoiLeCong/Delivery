@@ -639,7 +639,7 @@ const updateOrderStatusFail = async (orderId: string) => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Lý do hủy đơn hàng</Text>
+            <Text style={styles.modalTitle}>Lý do giao thất bại</Text>
             <TextInput
               style={styles.modalInput}
               placeholder="Nhập lý do hủy..."
