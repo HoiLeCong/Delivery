@@ -31,7 +31,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import axios from "axios";
-const API_BASE_URL = "http://192.168.1.204:3001";
+const API_BASE_URL = "https://https-github-com-nguyenquoctien15-rn.onrender.com";
 type ItemComponentProps = {
   item: any;
   onPress: () => void;

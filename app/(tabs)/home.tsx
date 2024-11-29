@@ -20,7 +20,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import axios from 'axios'
-const API_BASE_URL = 'http://192.168.1.204:3001';
+const API_BASE_URL = 'https://https-github-com-nguyenquoctien15-rn.onrender.com';
 
 const ItemComponent = ({ item, onPress, expanded, handleConfirmOrder }) => {
   const animatedHeight = useState(new Animated.Value(140))[0];
